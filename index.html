@@ -1,0 +1,1476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Punch Buggy — App Concept</title>
+<style>
+  :root{
+    --bg:#EDEEEC;
+    --backdrop-a:#e3e4df;
+    --backdrop-b:#d4d6cf;
+    --surface:#FFFFFF;
+    --surface-2:#F5F4EF;
+    --ink:#1B1D22;
+    --ink-soft:rgba(27,29,34,.62);
+    --ink-faint:rgba(27,29,34,.38);
+    --border:rgba(27,29,34,.12);
+    --reineke:#2F6488;
+    --reineke-tint:rgba(47,100,136,.12);
+    --ouellette:#C97C1F;
+    --ouellette-tint:rgba(201,124,31,.14);
+    --rust:#A8481F;
+    --rust-tint:rgba(168,72,31,.13);
+    --green:#386F55;
+    --green-tint:rgba(56,111,85,.13);
+    --font-display:-apple-system,"SF Pro Display",system-ui,sans-serif;
+    --font-body:-apple-system,"SF Pro Text",system-ui,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,monospace;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#17181D;
+      --backdrop-a:#101116;
+      --backdrop-b:#1c1e25;
+      --surface:#1F2127;
+      --surface-2:#26282f;
+      --ink:#EDEEEC;
+      --ink-soft:rgba(237,238,236,.66);
+      --ink-faint:rgba(237,238,236,.4);
+      --border:rgba(237,238,236,.14);
+      --reineke:#7FB4D9;
+      --reineke-tint:rgba(127,180,217,.16);
+      --ouellette:#F0A94A;
+      --ouellette-tint:rgba(240,169,74,.16);
+      --rust:#E07A4E;
+      --rust-tint:rgba(224,122,78,.16);
+      --green:#63A987;
+      --green-tint:rgba(99,169,135,.16);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#17181D; --backdrop-a:#101116; --backdrop-b:#1c1e25;
+    --surface:#1F2127; --surface-2:#26282f; --ink:#EDEEEC;
+    --ink-soft:rgba(237,238,236,.66); --ink-faint:rgba(237,238,236,.4);
+    --border:rgba(237,238,236,.14);
+    --reineke:#7FB4D9; --reineke-tint:rgba(127,180,217,.16);
+    --ouellette:#F0A94A; --ouellette-tint:rgba(240,169,74,.16);
+    --rust:#E07A4E; --rust-tint:rgba(224,122,78,.16);
+    --green:#63A987; --green-tint:rgba(99,169,135,.16);
+    color-scheme: dark;
+  }
+  :root[data-theme="light"]{
+    --bg:#EDEEEC; --backdrop-a:#e3e4df; --backdrop-b:#d4d6cf;
+    --surface:#FFFFFF; --surface-2:#F5F4EF; --ink:#1B1D22;
+    --ink-soft:rgba(27,29,34,.62); --ink-faint:rgba(27,29,34,.38);
+    --border:rgba(27,29,34,.12);
+    --reineke:#2F6488; --reineke-tint:rgba(47,100,136,.12);
+    --ouellette:#C97C1F; --ouellette-tint:rgba(201,124,31,.14);
+    --rust:#A8481F; --rust-tint:rgba(168,72,31,.13);
+    --green:#386F55; --green-tint:rgba(56,111,85,.13);
+    color-scheme: light;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:var(--font-body);
+    color:var(--ink);
+    background:
+      radial-gradient(ellipse 900px 500px at 50% -10%, var(--backdrop-b), var(--backdrop-a) 60%);
+    min-height:100vh;
+    overflow-x:hidden;
+    display:flex;
+    justify-content:center;
+  }
+  .stage{
+    width:100%;
+    max-width:640px;
+    padding:clamp(28px,6vw,56px) 20px 40px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:22px;
+  }
+  .pitch{ text-align:center; max-width:420px; }
+  .eyebrow{
+    margin:0 0 6px;
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+  }
+  .logo-row{ display:flex; align-items:center; justify-content:center; gap:10px; }
+  .hero-bug{ flex:0 0 auto; margin-bottom:6px; }
+  .logo{
+    margin:0;
+    font-family:var(--font-display);
+    font-weight:900;
+    font-size:clamp(34px,8vw,46px);
+    letter-spacing:-.02em;
+    text-wrap:balance;
+  }
+  .logo em{
+    font-style:normal;
+    color:var(--rust);
+  }
+  .tagline{
+    margin:10px 0 0;
+    font-size:14.5px;
+    line-height:1.5;
+    color:var(--ink-soft);
+    text-wrap:balance;
+  }
+
+  /* ---------- phone ---------- */
+  .phone-wrap{ width:min(320px,86vw); }
+  .phone{
+    position:relative;
+    width:100%;
+    aspect-ratio: 320 / 660;
+    background:var(--ink);
+    border-radius:46px;
+    padding:14px;
+    box-shadow:0 30px 60px -20px rgba(0,0,0,.45), 0 2px 0 rgba(255,255,255,.04) inset;
+  }
+  .screen{
+    position:relative;
+    width:100%;
+    height:calc(100% - 78px);
+    background:var(--bg);
+    border-radius:32px;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+  }
+  .island{
+    position:absolute; top:14px; left:50%; transform:translateX(-50%);
+    width:84px; height:22px; background:#000; border-radius:14px; z-index:5;
+  }
+  .statusbar{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:10px 20px 4px; font-family:var(--font-mono); font-size:12px;
+    font-weight:600; color:var(--ink); flex:0 0 auto;
+  }
+  .statusbar .icons{ display:flex; gap:4px; align-items:center; }
+  .sig{ display:flex; gap:2px; align-items:flex-end; height:9px; }
+  .sig i{ width:2.5px; background:var(--ink); border-radius:1px; display:block; }
+  .sig i:nth-child(1){height:3px;} .sig i:nth-child(2){height:5px;}
+  .sig i:nth-child(3){height:7px;} .sig i:nth-child(4){height:9px;}
+  .batt{ width:20px; height:10px; border:1.2px solid var(--ink); border-radius:2.5px; position:relative; }
+  .batt::before{ content:""; position:absolute; right:-3px; top:3px; width:2px; height:4px; background:var(--ink); border-radius:0 1px 1px 0;}
+  .batt::after{ content:""; position:absolute; inset:1.5px; left:1.5px; width:70%; background:var(--ink); border-radius:1px; }
+
+  .panels{ position:relative; flex:1 1 auto; overflow:hidden; }
+  .panel{
+    position:absolute; inset:0; overflow-y:auto; overflow-x:hidden;
+    padding:6px 16px 20px; opacity:0; pointer-events:none; transform:translateY(6px);
+    transition:opacity .22s ease, transform .22s ease;
+  }
+  .panel.active{ opacity:1; pointer-events:auto; transform:translateY(0); }
+
+  h2.screen-title{
+    font-family:var(--font-display); font-weight:800; font-size:22px;
+    letter-spacing:-.01em; margin:10px 0 2px;
+  }
+  .screen-sub{ margin:0 0 14px; font-size:12.5px; color:var(--ink-soft); }
+
+  .card{
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:16px; padding:13px 14px; margin-bottom:10px;
+  }
+
+  /* score */
+  .score-row{
+    display:flex; align-items:center; justify-content:space-between;
+    background:var(--surface); border:1px solid var(--border); border-radius:20px;
+    padding:16px 12px; margin-bottom:12px;
+  }
+  .team{ flex:1; text-align:center; }
+  .team .name{ font-size:11px; letter-spacing:.08em; text-transform:uppercase; font-weight:700; }
+  .team.reineke .name{ color:var(--reineke); }
+  .team.ouellette .name{ color:var(--ouellette); }
+  .team .num{ font-family:var(--font-mono); font-variant-numeric:tabular-nums; font-size:34px; font-weight:700; line-height:1.1; margin-top:2px; }
+  .vs{ font-family:var(--font-mono); font-size:11px; color:var(--ink-faint); padding:0 6px; }
+  .lead-pill{
+    display:block; margin:0 auto 14px; width:fit-content;
+    font-size:11.5px; font-weight:600; padding:5px 12px; border-radius:999px;
+    background:var(--green-tint); color:var(--green);
+  }
+  .bars{ display:flex; align-items:flex-end; gap:14px; height:60px; margin:6px 0 14px; padding:0 6px; }
+  .bar-col{ flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; }
+  .bar{ width:100%; border-radius:6px 6px 2px 2px; }
+  .bar.r{ background:var(--reineke); }
+  .bar.o{ background:var(--ouellette); }
+  .bar-label{ font-size:9.5px; color:var(--ink-faint); font-family:var(--font-mono); }
+
+  .section-label{
+    font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--ink-faint); margin:16px 2px 8px;
+  }
+  .moment{ display:flex; gap:10px; padding:10px 2px; border-bottom:1px solid var(--border); }
+  .moment:last-child{ border-bottom:none; }
+  .dot{ width:8px; height:8px; border-radius:50%; margin-top:6px; flex:0 0 auto; }
+  .dot.r{ background:var(--reineke); } .dot.o{ background:var(--ouellette); } .dot.n{ background:var(--ink-faint); }
+  .moment-icon{ flex:0 0 auto; margin-top:4px; }
+  .moment p{ margin:0; font-size:13px; line-height:1.4; }
+  .moment .pts{ font-family:var(--font-mono); font-weight:700; }
+  .moment .when{ font-size:10.5px; color:var(--ink-faint); margin-top:2px; }
+
+  /* trip */
+  .big-start{
+    width:100%; border:none; border-radius:18px; padding:22px 16px;
+    background:var(--reineke); color:#fff; font-family:var(--font-display);
+    font-weight:800; font-size:16px; letter-spacing:.01em; cursor:pointer;
+  }
+  .trip-live{ display:flex; align-items:center; gap:8px; margin:8px 2px 14px; }
+  .pulse{ width:9px; height:9px; border-radius:50%; background:var(--green); animation:pulse 1.6s infinite; }
+  @keyframes pulse{ 0%,100%{ opacity:1; } 50%{ opacity:.35; } }
+  @media (prefers-reduced-motion: reduce){ .pulse{ animation:none; } }
+  .trip-live span{ font-size:12.5px; color:var(--ink-soft); font-family:var(--font-mono); }
+
+  .punch-wrap{ display:flex; justify-content:center; margin:18px 0 10px; }
+  .punch-btn{
+    width:112px; height:112px; border-radius:50%; border:none; cursor:pointer;
+    background:var(--rust); color:#fff; font-family:var(--font-display);
+    font-weight:900; font-size:14px; letter-spacing:.02em;
+    box-shadow:0 10px 26px -8px var(--rust);
+    transition:transform .12s ease;
+  }
+  .punch-btn:active{ transform:scale(.93); }
+  .end-trip{
+    display:block; margin:6px auto 0; background:none; border:none; color:var(--ink-faint);
+    font-size:12px; text-decoration:underline; cursor:pointer; font-family:var(--font-body);
+  }
+  .call-row{ display:flex; justify-content:space-between; align-items:baseline; padding:9px 2px; border-bottom:1px solid var(--border); }
+  .call-row:last-child{ border-bottom:none; }
+  .call-row p{ margin:0; font-size:12.5px; }
+  .call-row .pts{ font-family:var(--font-mono); font-weight:700; font-size:12.5px; color:var(--green); }
+  .empty{ text-align:center; color:var(--ink-faint); font-size:12px; padding:20px 0; }
+
+  /* history */
+  details.trip-card{ background:var(--surface); border:1px solid var(--border); border-radius:16px; margin-bottom:10px; overflow:hidden; }
+  details.trip-card summary{ list-style:none; padding:13px 14px; cursor:pointer; display:flex; justify-content:space-between; align-items:center; gap:10px; }
+  details.trip-card summary > div:first-child{ display:flex; align-items:center; gap:10px; flex:1; min-width:0; }
+  .trip-icon{ flex:0 0 auto; opacity:.55; }
+  details.trip-card summary::-webkit-details-marker{ display:none; }
+  .trip-name{ font-size:13.5px; font-weight:650; }
+  .trip-meta{ font-size:11px; color:var(--ink-faint); margin-top:2px; }
+  .trip-pts{ font-family:var(--font-mono); font-weight:700; font-size:14px; }
+  .trip-detail{ padding:0 14px 13px; font-size:12px; color:var(--ink-soft); border-top:1px solid var(--border); padding-top:10px; }
+
+  /* rules */
+  .rule-row{ display:flex; justify-content:space-between; align-items:center; padding:12px 2px; border-bottom:1px solid var(--border); gap:10px; }
+  .rule-row:last-child{ border-bottom:none; }
+  .rule-row .t{ font-size:13px; font-weight:600; }
+  .rule-row .d{ font-size:11px; color:var(--ink-faint); margin-top:2px; }
+  .switch{ position:relative; width:42px; height:24px; flex:0 0 auto; }
+  .switch input{ opacity:0; width:100%; height:100%; margin:0; cursor:pointer; }
+  .switch .track{ position:absolute; inset:0; background:var(--border); border-radius:999px; transition:background .18s; pointer-events:none; }
+  .switch .knob{ position:absolute; top:2px; left:2px; width:20px; height:20px; background:#fff; border-radius:50%; box-shadow:0 1px 3px rgba(0,0,0,.3); transition:transform .18s; pointer-events:none; }
+  .switch input:checked + .track{ background:var(--green); }
+  .switch input:checked ~ .knob{ transform:translateX(18px); }
+  .switch input:disabled + .track{ background:var(--border); opacity:.6; }
+  .switch input:focus-visible + .track{ outline:2px solid var(--reineke); outline-offset:2px; }
+  .locked-note{ font-size:10.5px; color:var(--ink-faint); font-style:italic; }
+
+  /* tabbar */
+  .tabbar{
+    position:absolute; bottom:14px; left:14px; right:14px; height:0;
+  }
+  .tabbar-inner{
+    position:absolute; bottom:14px; left:14px; right:14px;
+    display:flex; background:var(--surface); border-top:1px solid var(--border);
+    border-radius:0 0 26px 26px; padding:8px 4px 4px;
+  }
+  .tab{
+    flex:1; background:none; border:none; cursor:pointer; display:flex; flex-direction:column;
+    align-items:center; gap:3px; padding:4px 0; color:var(--ink-faint); font-family:var(--font-body);
+    font-size:9.5px; font-weight:600;
+  }
+  .tab svg{ width:18px; height:18px; }
+  .tab.active{ color:var(--reineke); }
+  .tab:focus-visible{ outline:2px solid var(--reineke); outline-offset:2px; border-radius:8px; }
+  .home-ind{ position:absolute; bottom:6px; left:50%; transform:translateX(-50%); width:110px; height:4px; background:var(--ink-faint); border-radius:99px; opacity:.5; }
+
+  /* sheet */
+  .sheet{
+    position:absolute; inset:0; z-index:20; display:flex; align-items:flex-end;
+    background:rgba(0,0,0,0); pointer-events:none; transition:background .25s ease;
+  }
+  .sheet.open{ pointer-events:auto; background:rgba(0,0,0,.32); }
+  .sheet-panel{
+    width:100%; max-height:88%; background:var(--surface); border-radius:24px 24px 0 0;
+    padding:10px 18px 20px; transform:translateY(100%); transition:transform .28s cubic-bezier(.32,.72,0,1);
+    overflow-y:auto; box-shadow:0 -10px 30px rgba(0,0,0,.25);
+  }
+  .sheet.open .sheet-panel{ transform:translateY(0); }
+  .grabber{ width:36px; height:4px; background:var(--border); border-radius:99px; margin:4px auto 12px; }
+  .sheet h3{ font-family:var(--font-display); font-size:17px; font-weight:800; margin:0 0 2px; }
+  .sheet .sub{ font-size:11.5px; color:var(--ink-faint); margin:0 0 14px; }
+  .chips{ display:flex; flex-wrap:wrap; gap:7px; margin-bottom:16px; }
+  .chip{
+    display:inline-flex; align-items:center; gap:7px;
+    border:1.4px solid var(--border); background:var(--surface-2); color:var(--ink);
+    font-size:12px; font-weight:600; padding:6px 12px 6px 8px; border-radius:999px; cursor:pointer;
+    font-family:var(--font-body);
+  }
+  .chip svg{ flex:0 0 auto; }
+  .chip[aria-pressed="true"]{ background:var(--reineke); border-color:var(--reineke); color:#fff; }
+  .chip:disabled{ opacity:.4; cursor:not-allowed; text-decoration:line-through; }
+  .seg{ display:flex; gap:6px; margin-bottom:6px; flex-wrap:wrap; }
+  .seg button{
+    flex:1 1 30%; border:1.4px solid var(--border); background:var(--surface-2); color:var(--ink);
+    font-size:11.5px; font-weight:700; padding:9px 4px; border-radius:12px; cursor:pointer; font-family:var(--font-body);
+  }
+  .seg button[aria-pressed="true"]{ background:var(--rust); border-color:var(--rust); color:#fff; }
+  .seg button:disabled{ opacity:.35; cursor:not-allowed; }
+  .mult-note{ font-size:10.5px; color:var(--ink-faint); margin:-2px 0 14px; }
+  .log-submit{
+    width:100%; border:none; border-radius:16px; padding:15px; margin-top:6px;
+    background:var(--ink); color:var(--bg); font-family:var(--font-display); font-weight:800;
+    font-size:14.5px; cursor:pointer; display:flex; justify-content:center; gap:8px;
+  }
+  .log-submit .pv{ font-family:var(--font-mono); color:var(--green); }
+  .close-sheet{ position:absolute; top:14px; right:16px; background:none; border:none; color:var(--ink-faint); font-size:13px; cursor:pointer; font-family:var(--font-body); }
+
+  /* notification demo */
+  .notif{
+    position:absolute; top:44px; left:10px; right:10px; z-index:30;
+    background:var(--surface); border-radius:18px; padding:12px 13px; display:flex; gap:10px;
+    box-shadow:0 12px 30px rgba(0,0,0,.3); transform:translateY(-140%); transition:transform .35s cubic-bezier(.32,.72,0,1);
+    border:1px solid var(--border);
+  }
+  .notif.show{ transform:translateY(0); }
+  .notif .badge{ width:30px; height:30px; border-radius:9px; background:var(--rust); flex:0 0 auto; display:flex; align-items:center; justify-content:center; color:#fff; font-size:15px; }
+  .notif b{ font-size:12.5px; } .notif p{ margin:2px 0 0; font-size:11.5px; color:var(--ink-soft); line-height:1.35; }
+  .notif .cap{ font-size:9.5px; color:var(--ink-faint); margin-top:4px; font-style:italic; }
+
+  /* team / roster */
+  .avatar{
+    width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-weight:700; font-size:12.5px; color:#fff; flex:0 0 auto; font-family:var(--font-body);
+  }
+  .avatar.sm{ width:24px; height:24px; font-size:10px; }
+  .roster-row{ display:flex; align-items:center; gap:10px; padding:10px 2px; border-bottom:1px solid var(--border); }
+  .roster-row:last-child{ border-bottom:none; }
+  .roster-row .info{ flex:1; min-width:0; }
+  .roster-row .rname{ font-size:13.5px; font-weight:650; display:flex; align-items:center; gap:6px; }
+  .roster-row .rpts{ font-family:var(--font-mono); font-weight:700; font-size:13px; flex:0 0 auto; }
+  .you-tag{ font-size:9px; background:var(--reineke-tint); color:var(--reineke); padding:2px 6px; border-radius:999px; font-weight:700; letter-spacing:.03em; }
+  .invite-row{ display:flex; align-items:center; justify-content:space-between; margin-top:8px; gap:10px; }
+  .copy-btn{
+    border:1px solid var(--border); background:var(--surface-2); color:var(--ink); font-size:11.5px;
+    font-weight:600; padding:7px 11px; border-radius:10px; cursor:pointer; font-family:var(--font-body); flex:0 0 auto;
+  }
+  .copy-btn.copied{ background:var(--green); border-color:var(--green); color:#fff; }
+  .add-member-btn{
+    width:100%; border:1.4px dashed var(--border); background:none; color:var(--ink-soft);
+    font-size:12.5px; font-weight:600; padding:11px; border-radius:14px; cursor:pointer; margin-top:2px; font-family:var(--font-body);
+  }
+  .text-input{
+    width:100%; border:1.4px solid var(--border); background:var(--surface-2); color:var(--ink);
+    font-size:14px; padding:11px 12px; border-radius:12px; font-family:var(--font-body); margin-bottom:14px;
+  }
+  .text-input:focus-visible{ outline:2px solid var(--reineke); outline-offset:1px; }
+
+  /* team toggle (demo: which household's phone you're viewing) */
+  .team-toggle{ display:flex; gap:6px; margin-bottom:6px; }
+  .team-toggle button{
+    flex:1; border:1.4px solid var(--border); background:var(--surface-2); color:var(--ink);
+    font-family:var(--font-body); font-weight:700; font-size:11.5px; padding:9px 4px; border-radius:12px; cursor:pointer;
+  }
+  .team-toggle button.tt-reineke[aria-pressed="true"]{ background:var(--reineke); border-color:var(--reineke); color:#fff; }
+  .team-toggle button.tt-ouellette[aria-pressed="true"]{ background:var(--ouellette); border-color:var(--ouellette); color:#fff; }
+  .team-toggle-note{ font-size:10px; color:var(--ink-faint); margin:0 0 14px; font-style:italic; }
+
+  /* logging-as switcher */
+  .member-switch{
+    display:flex; align-items:center; justify-content:space-between; background:var(--surface);
+    border:1px solid var(--border); border-radius:14px; padding:8px 10px; margin-bottom:14px;
+  }
+  .member-switch .who{ display:flex; align-items:center; gap:8px; }
+  .member-switch .txt{ display:flex; flex-direction:column; }
+  .member-switch .lbl{ font-size:9px; color:var(--ink-faint); letter-spacing:.06em; text-transform:uppercase; }
+  .member-switch .nm{ font-size:12.5px; font-weight:650; }
+  .cycle-btn{
+    border:none; background:var(--surface-2); width:26px; height:26px; border-radius:50%; cursor:pointer;
+    color:var(--ink); font-size:13px; display:flex; align-items:center; justify-content:center; flex:0 0 auto;
+  }
+
+  /* top spotters */
+  .spotters-cols{ display:flex; gap:14px; }
+  .spotters-col{ flex:1; min-width:0; }
+  .spotters-col h4{ font-size:10px; text-transform:uppercase; letter-spacing:.06em; margin:0 0 6px; color:var(--ink-faint); }
+  .spot-row{ display:flex; justify-content:space-between; gap:6px; font-size:12px; padding:4px 0; }
+  .spot-row .nm{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .spot-row b{ font-family:var(--font-mono); flex:0 0 auto; }
+
+  /* photo proof */
+  .photo-drop{
+    display:flex; align-items:center; justify-content:center; height:110px; border-radius:16px;
+    border:1.6px dashed var(--border); background:var(--surface-2); cursor:pointer; overflow:hidden;
+    margin-bottom:8px; transition:border-color .15s;
+  }
+  .photo-drop span{ font-size:12.5px; color:var(--ink-faint); font-weight:600; }
+  .photo-drop img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .photo-req-note{ font-size:10.5px; color:var(--ink-faint); margin:0 0 14px; }
+  .thumb{ width:22px; height:22px; border-radius:6px; object-fit:cover; flex:0 0 auto; margin-right:6px; }
+
+  /* rulings */
+  .ruling-card{}
+  .ruling-q{ font-size:12.5px; font-style:italic; margin:0 0 10px; line-height:1.4; }
+  .vote-row{ display:flex; flex-direction:column; gap:8px; }
+  .vote-team{ display:flex; align-items:center; gap:7px; font-size:11px; }
+  .vote-team .team-lbl{ width:58px; font-weight:700; flex:0 0 auto; }
+  .vote-btn{
+    border:1px solid var(--border); background:var(--surface-2); color:var(--ink); font-size:10.5px;
+    font-weight:700; padding:5px 9px; border-radius:8px; cursor:pointer; font-family:var(--font-body); flex:0 0 auto;
+  }
+  .vote-btn.picked-yes{ background:var(--green); border-color:var(--green); color:#fff; }
+  .vote-btn.picked-no{ background:var(--rust); border-color:var(--rust); color:#fff; }
+  .vote-status{ margin-left:auto; font-family:var(--font-mono); font-size:10px; color:var(--ink-faint); }
+
+  .verdict-card{ border-left:3px solid var(--rust); padding-left:12px; }
+  .verdict-q{ font-size:11px; color:var(--ink-faint); font-style:italic; margin:0 0 5px; }
+  .verdict-label{ font-family:var(--font-mono); font-size:9.5px; letter-spacing:.08em; color:var(--rust); font-weight:700; }
+  .verdict-text{ font-size:12px; margin:3px 0 0; line-height:1.4; }
+
+  /* round progress */
+  .round-tracks{ display:flex; flex-direction:column; gap:9px; margin:0 0 16px; }
+  .round-meta{ display:flex; justify-content:space-between; font-size:10px; font-family:var(--font-mono); color:var(--ink-faint); margin:0 2px 4px; }
+  .round-track{ height:8px; background:var(--surface-2); border-radius:99px; position:relative; }
+  .round-fill{ height:100%; border-radius:99px; transition:width .5s ease; }
+  .round-fill.r{ background:var(--reineke); }
+  .round-fill.o{ background:var(--ouellette); }
+  .round-marker{ position:absolute; top:50%; transition:left .5s ease; transform:translate(-50%,-50%); }
+  .target-stepper{ display:flex; align-items:center; gap:8px; flex:0 0 auto; }
+  .target-num{ font-family:var(--font-mono); font-weight:700; font-size:15px; min-width:20px; text-align:center; font-variant-numeric:tabular-nums; }
+
+  /* bug-dex */
+  .dex-row{ display:flex; align-items:center; justify-content:space-between; padding:7px 2px; border-bottom:1px solid var(--border); gap:10px; }
+  .dex-row:last-child{ border-bottom:none; }
+  .dex-color-name{ font-size:11px; font-weight:600; flex:0 0 auto; }
+  .dex-cells{ display:flex; gap:6px; }
+  .dex-cells span{ display:block; line-height:0; }
+
+  /* global leaderboard */
+  .lb-row{ display:flex; align-items:center; gap:10px; padding:9px 2px; border-bottom:1px solid var(--border); }
+  .lb-row:last-child{ border-bottom:none; }
+  .lb-rank{ width:24px; text-align:center; font-family:var(--font-mono); font-weight:700; font-size:12px; color:var(--ink-faint); flex:0 0 auto; }
+  .lb-info{ flex:1; min-width:0; }
+  .lb-name{ font-size:12.5px; font-weight:650; display:flex; align-items:center; gap:6px; }
+  .lb-loc{ font-size:10.5px; color:var(--ink-faint); }
+  .lb-pts{ font-family:var(--font-mono); font-weight:700; font-size:13px; flex:0 0 auto; }
+  .lb-row.you{ background:var(--reineke-tint); border-radius:10px; margin:0 -6px; padding:9px 6px; }
+  .lb-row.you .lb-rank{ color:var(--reineke); }
+
+  /* past rounds */
+  .round-card{ display:flex; align-items:center; gap:10px; }
+  .round-trophy{ font-size:16px; flex:0 0 auto; }
+  .round-card .info{ flex:1; }
+  .round-card .rt-name{ font-size:13px; font-weight:650; }
+  .round-card .rt-meta{ font-size:10.5px; color:var(--ink-faint); margin-top:1px; }
+
+  /* win overlay */
+  .win-overlay{
+    position:absolute; inset:0; z-index:40; display:flex; align-items:center; justify-content:center;
+    padding:22px; background:rgba(0,0,0,0); pointer-events:none; transition:background .3s ease;
+  }
+  .win-overlay.show{ pointer-events:auto; background:rgba(0,0,0,.55); }
+  .win-card{
+    position:relative; width:100%; background:var(--surface); border-radius:22px; padding:28px 22px; text-align:center;
+    transform:scale(.85); opacity:0; transition:transform .32s cubic-bezier(.32,1.4,.4,1), opacity .28s; overflow:hidden;
+  }
+  .win-overlay.show .win-card{ transform:scale(1); opacity:1; }
+  .win-eyebrow{ font-family:var(--font-mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-faint); margin:0 0 10px; }
+  .win-title{ font-family:var(--font-display); font-weight:900; font-size:21px; margin:0 0 4px; text-wrap:balance; }
+  .win-score{ font-family:var(--font-mono); font-size:32px; font-weight:700; margin:8px 0 18px; font-variant-numeric:tabular-nums; }
+  .win-new-round{
+    width:100%; border:none; border-radius:14px; padding:14px; background:var(--ink); color:var(--bg);
+    font-family:var(--font-display); font-weight:800; font-size:14px; cursor:pointer;
+  }
+  .confetti{ position:absolute; inset:0; overflow:hidden; pointer-events:none; }
+  .confetti i{ position:absolute; top:-8%; width:6px; height:12px; border-radius:2px; opacity:.9; animation:confetti-fall linear forwards; }
+  @keyframes confetti-fall{ to{ transform:translateY(360px) rotate(320deg); opacity:0; } }
+  @media (prefers-reduced-motion: reduce){ .confetti{ display:none; } }
+
+  .hint{ font-size:12px; color:var(--ink-faint); text-align:center; max-width:280px; }
+  .quicknav{ display:flex; gap:8px; }
+  .qn{ width:7px; height:7px; border-radius:50%; background:var(--ink-faint); opacity:.35; border:none; cursor:pointer; padding:0; }
+  .qn.active{ opacity:1; background:var(--reineke); }
+</style>
+</head>
+<body>
+<div class="stage">
+  <header class="pitch">
+    <p class="eyebrow">App Concept · Interactive Mockup</p>
+    <div class="logo-row">
+      <svg class="hero-bug" viewBox="0 0 100 42" width="34" height="14" aria-hidden="true"><path d="M2,33 C2,21 10,11 25,10 C32,9 34,5 45,5 C58,5 62,10 70,11 C85,12 98,19 98,31 C98,34 95,35 90,35 L10,35 C5,35 2,35 2,33 Z" fill="var(--reineke)" transform="scale(-1,1) translate(-100,0)"/><circle cx="77" cy="34" r="6" fill="rgba(0,0,0,.38)"/><circle cx="22" cy="34" r="6" fill="rgba(0,0,0,.38)"/></svg>
+      <h1 class="logo">PUNCH<br><em>BUGGY</em></h1>
+      <svg class="hero-bug" viewBox="0 0 100 42" width="34" height="14" aria-hidden="true"><path d="M2,33 C2,21 10,11 25,10 C32,9 34,5 45,5 C58,5 62,10 70,11 C85,12 98,19 98,31 C98,34 95,35 90,35 L10,35 C5,35 2,35 2,33 Z" fill="var(--ouellette)"/><circle cx="23" cy="34" r="6" fill="rgba(0,0,0,.38)"/><circle cx="78" cy="34" r="6" fill="rgba(0,0,0,.38)"/></svg>
+    </div>
+    <p class="tagline">"Punch Buggy Yellow. No punch backs." Now a coast-to-coast rivalry between Team Reineke and Team Ouellette.</p>
+  </header>
+
+  <div class="phone-wrap">
+    <div class="phone">
+      <div class="island"></div>
+      <div class="statusbar">
+        <span>9:41</span>
+        <span class="icons">
+          <span class="sig"><i></i><i></i><i></i><i></i></span>
+          <span class="batt"></span>
+        </span>
+      </div>
+
+      <div class="screen">
+        <div class="panels">
+
+          <!-- SCORE -->
+          <section id="panel-score" class="panel active">
+            <h2 class="screen-title">Rivalry</h2>
+            <p class="screen-sub">Shared ruleset · started this spring</p>
+
+            <div class="score-row">
+              <div class="team reineke"><div class="name">Reineke</div><div class="num" id="score-reineke">14</div></div>
+              <div class="vs">VS</div>
+              <div class="team ouellette"><div class="name">Ouellette</div><div class="num" id="score-ouellette">9</div></div>
+            </div>
+            <span class="lead-pill" id="lead-pill">Team Reineke leads by 5</span>
+
+            <div class="round-tracks" id="round-tracks"></div>
+
+            <div class="section-label">This week</div>
+            <div class="bars">
+              <div class="bar-col"><div class="bar r" style="height:34px"></div><span class="bar-label">R · 5</span></div>
+              <div class="bar-col"><div class="bar o" style="height:20px"></div><span class="bar-label">O · 3</span></div>
+              <div class="bar-col"><div class="bar r" style="height:18px"></div><span class="bar-label">R · 2</span></div>
+              <div class="bar-col"><div class="bar o" style="height:40px"></div><span class="bar-label">O · 6</span></div>
+            </div>
+
+            <div class="section-label">Top spotters</div>
+            <div class="spotters-cols">
+              <div class="spotters-col">
+                <h4 style="color:var(--reineke)">Reineke</h4>
+                <div id="spotters-reineke"></div>
+              </div>
+              <div class="spotters-col">
+                <h4 style="color:var(--ouellette)">Ouellette</h4>
+                <div id="spotters-ouellette"></div>
+              </div>
+            </div>
+
+            <div class="section-label">Your Collection <span style="text-transform:none;font-weight:500;color:var(--ink-faint);">— yours no matter who you're playing against</span></div>
+            <button class="add-member-btn" id="open-bugdex">🪲 My Bug-Dex — <span id="bugdex-count-inline">5</span>/56 found</button>
+            <button class="add-member-btn" id="open-leaderboard">🌍 See the Global Leaderboard</button>
+
+            <div class="section-label">Big moments</div>
+            <div class="moment"><span class="moment-icon"><svg viewBox="0 0 100 42" width="22" height="9" aria-hidden="true"><path d="M2,33 C2,21 10,11 25,10 C32,9 34,5 45,5 C58,5 62,10 70,11 C85,12 98,19 98,31 C98,34 95,35 90,35 L10,35 C5,35 2,35 2,33 Z" fill="#E0C21C"/><circle cx="23" cy="34" r="6" fill="rgba(0,0,0,.38)"/><circle cx="78" cy="34" r="6" fill="rgba(0,0,0,.38)"/></svg></span><p>Team Ouellette spotted a <b>Thing</b> — Saturn Yellow, black convertible top. <span class="pts" style="color:var(--rust)">+10</span><span class="when">Back road, PA · yesterday</span></p></div>
+            <div class="moment"><span class="moment-icon"><svg viewBox="0 0 100 42" width="22" height="9" aria-hidden="true"><path d="M2,33 C2,21 10,11 25,10 C32,9 34,5 45,5 C58,5 62,10 70,11 C85,12 98,19 98,31 C98,34 95,35 90,35 L10,35 C5,35 2,35 2,33 Z" fill="#A32C2E"/><circle cx="23" cy="34" r="6" fill="rgba(0,0,0,.38)"/><circle cx="78" cy="34" r="6" fill="rgba(0,0,0,.38)"/></svg></span><p>Team Reineke called <b>Convertible</b>, Kasan Red with tan top. <span class="pts" style="color:var(--green)">+2</span><span class="when">Wendy's parking lot · 2 days ago</span></p></div>
+            <div class="moment"><span class="moment-icon"><svg viewBox="0 0 100 42" width="22" height="9" aria-hidden="true"><path d="M2,33 C2,21 10,11 25,10 C32,9 34,5 45,5 C58,5 62,10 70,11 C85,12 98,19 98,31 C98,34 95,35 90,35 L10,35 C5,35 2,35 2,33 Z" fill="#6FA3B5"/><circle cx="23" cy="34" r="6" fill="rgba(0,0,0,.38)"/><circle cx="78" cy="34" r="6" fill="rgba(0,0,0,.38)"/></svg></span><p>Same bug, no hit — ceasefire honored on the CVS-lot Marina Blue Beetle.<span class="when">3 days ago</span></p></div>
+            <div class="moment"><span class="moment-icon"><svg viewBox="0 0 100 42" width="22" height="9" aria-hidden="true"><path d="M2,33 C2,21 10,11 25,10 C32,9 34,5 45,5 C58,5 62,10 70,11 C85,12 98,19 98,31 C98,34 95,35 90,35 L10,35 C5,35 2,35 2,33 Z" fill="#205C3F"/><circle cx="23" cy="34" r="6" fill="rgba(0,0,0,.38)"/><circle cx="78" cy="34" r="6" fill="rgba(0,0,0,.38)"/></svg></span><p>Team Ouellette: New Beetle, Sumatra Green. <span class="pts" style="color:var(--green)">+1</span><span class="when">4 days ago</span></p></div>
+          </section>
+
+          <!-- TRIP -->
+          <section id="panel-trip" class="panel">
+            <h2 class="screen-title">Trip</h2>
+            <p class="screen-sub" id="trip-sub">Between two points, until the engine's off long enough for the fan to stop.</p>
+
+            <div class="team-toggle" id="team-toggle">
+              <button class="tt-reineke" data-team="reineke" aria-pressed="true">Team Reineke</button>
+              <button class="tt-ouellette" data-team="ouellette" aria-pressed="false">Team Ouellette</button>
+            </div>
+            <p class="team-toggle-note">Demo: swap teams to see how the other family's phone plays.</p>
+
+            <div id="trip-idle">
+              <button class="big-start" id="start-trip">Start Trip</button>
+            </div>
+
+            <div id="trip-active" style="display:none;">
+              <div class="trip-live"><span class="pulse"></span><span id="trip-clock">Trip in progress · 0:00</span></div>
+
+              <div class="member-switch">
+                <div class="who">
+                  <div class="avatar sm" id="switch-avatar" style="background:var(--reineke)">N</div>
+                  <div class="txt"><span class="lbl">Logging as</span><span class="nm" id="switch-name">Nicole</span></div>
+                </div>
+                <button class="cycle-btn" id="cycle-member" title="Switch who's logging (demo)">⇄</button>
+              </div>
+
+              <div class="punch-wrap">
+                <button class="punch-btn" id="open-log"><svg viewBox="0 0 100 42" width="30" height="13" aria-hidden="true" style="display:block;margin:0 auto 4px;"><path d="M2,33 C2,21 10,11 25,10 C32,9 34,5 45,5 C58,5 62,10 70,11 C85,12 98,19 98,31 C98,34 95,35 90,35 L10,35 C5,35 2,35 2,33 Z" fill="#fff"/><circle cx="23" cy="34" r="6" fill="rgba(0,0,0,.3)"/><circle cx="78" cy="34" r="6" fill="rgba(0,0,0,.3)"/></svg>PUNCH<br>BUGGY</button>
+              </div>
+              <button class="end-trip" id="end-trip">End trip</button>
+
+              <div class="section-label">Logged this trip</div>
+              <div id="call-list"><div style="text-align:center;padding:16px 0 6px;"><div style="display:flex;justify-content:center;margin-bottom:6px;opacity:.32;"><svg viewBox="0 0 100 42" width="36" height="15" aria-hidden="true"><path d="M2,33 C2,21 10,11 25,10 C32,9 34,5 45,5 C58,5 62,10 70,11 C85,12 98,19 98,31 C98,34 95,35 90,35 L10,35 C5,35 2,35 2,33 Z" fill="var(--ink-faint)"/></svg></div><p class="empty" style="padding:0;">No calls yet. Go find a Beetle.</p></div></div>
+            </div>
+          </section>
+
+          <!-- HISTORY -->
+          <section id="panel-history" class="panel">
+            <h2 class="screen-title">Trip History</h2>
+            <p class="screen-sub">Every trip, logged and settled.</p>
+
+            <div class="section-label">Past Rounds</div>
+            <div id="past-rounds"></div>
+
+            <div class="section-label">Trips</div>
+            <details class="trip-card">
+              <summary><div><svg class="trip-icon" viewBox="0 0 100 42" width="20" height="8" aria-hidden="true"><path d="M2,33 C2,21 10,11 25,10 C32,9 34,5 45,5 C58,5 62,10 70,11 C85,12 98,19 98,31 C98,34 95,35 90,35 L10,35 C5,35 2,35 2,33 Z" fill="var(--ink-faint)"/></svg><div><div class="trip-name">Rt. 24 — Grandma's House</div><div class="trip-meta">Aug 2 · 3 sightings</div></div></div><div class="trip-pts">+5</div></summary>
+              <div class="trip-detail">Yellow Beetle (+1) · Black Beetle (+1) · Rust Beetle (+1, roadside), plus one Convertible Silver (+2).</div>
+            </details>
+            <details class="trip-card">
+              <summary><div><svg class="trip-icon" viewBox="0 0 100 42" width="20" height="8" aria-hidden="true"><path d="M2,33 C2,21 10,11 25,10 C32,9 34,5 45,5 C58,5 62,10 70,11 C85,12 98,19 98,31 C98,34 95,35 90,35 L10,35 C5,35 2,35 2,33 Z" fill="var(--ink-faint)"/></svg><div><div class="trip-name">Costa Rica Back Road</div><div class="trip-meta">Jul 21 · 1 sighting</div></div></div><div class="trip-pts">+0</div></summary>
+              <div class="trip-detail">Blue-and-white VW Bus spotted. Doesn't count — buses never do.</div>
+            </details>
+            <details class="trip-card">
+              <summary><div><svg class="trip-icon" viewBox="0 0 100 42" width="20" height="8" aria-hidden="true"><path d="M2,33 C2,21 10,11 25,10 C32,9 34,5 45,5 C58,5 62,10 70,11 C85,12 98,19 98,31 C98,34 95,35 90,35 L10,35 C5,35 2,35 2,33 Z" fill="var(--ink-faint)"/></svg><div><div class="trip-name">Drive-in Night</div><div class="trip-meta">Jul 14 · 2 sightings</div></div></div><div class="trip-pts">+4</div></summary>
+              <div class="trip-detail">Light blue Convertible, top down, tan interior (+2, advanced mode) · New Beetle, white (+1) · one disputed silver/pink call, reflection ruled void.</div>
+            </details>
+            <details class="trip-card">
+              <summary><div><svg class="trip-icon" viewBox="0 0 100 42" width="20" height="8" aria-hidden="true"><path d="M2,33 C2,21 10,11 25,10 C32,9 34,5 45,5 C58,5 62,10 70,11 C85,12 98,19 98,31 C98,34 95,35 90,35 L10,35 C5,35 2,35 2,33 Z" fill="var(--ink-faint)"/></svg><div><div class="trip-name">Band Drop-off</div><div class="trip-meta">Jul 9 · 2 sightings</div></div></div><div class="trip-pts">+2</div></summary>
+              <div class="trip-detail">Same two upper-lot Beetles, hit on drop-off and again on pickup — new phase, new trip, per house rules.</div>
+            </details>
+          </section>
+
+          <!-- TEAM -->
+          <section id="panel-team" class="panel">
+            <h2 class="screen-title" id="team-panel-title">Team Reineke</h2>
+            <p class="screen-sub"><span id="member-count">4</span> members · anyone can log a call</p>
+
+            <div class="card" id="roster-list"></div>
+
+            <button class="add-member-btn" id="open-add-member">+ Invite a member</button>
+
+            <div class="section-label">Invite</div>
+            <div class="card">
+              <div class="trip-name" style="margin-bottom:4px;">Share this code</div>
+              <div class="invite-row">
+                <div style="font-family:var(--font-mono); font-size:18px; letter-spacing:.08em;">BUG-7X2Q</div>
+                <button class="copy-btn" id="copy-code">Copy</button>
+              </div>
+              <div class="trip-meta" style="margin-top:8px;" id="invite-note">Anyone with this code can join Team Reineke and start logging calls under their own name.</div>
+            </div>
+          </section>
+
+          <!-- RULES -->
+          <section id="panel-rules" class="panel">
+            <h2 class="screen-title">Shared Ruleset</h2>
+            <p class="screen-sub">Agreed by both families · edits apply to future calls only</p>
+
+            <div class="rule-row">
+              <div><div class="t">First to</div><div class="d">Round ends the moment a team crosses this score</div></div>
+              <div class="target-stepper">
+                <button class="cycle-btn" id="target-minus" aria-label="Decrease target">−</button>
+                <span class="target-num" id="round-target-display">21</span>
+                <button class="cycle-btn" id="target-plus" aria-label="Increase target">+</button>
+              </div>
+            </div>
+            <div class="rule-row">
+              <div><div class="t">Convertible = 2 hits</div><div class="d">Rarity bonus for cloth or fold-down tops</div></div>
+              <label class="switch"><input type="checkbox" id="rule-convertible" checked><span class="track"></span><span class="knob"></span></label>
+            </div>
+            <div class="rule-row">
+              <div><div class="t">VW Thing = 10 hits</div><div class="d">The Type 181 unicorn clause</div></div>
+              <label class="switch"><input type="checkbox" id="rule-thing" checked><span class="track"></span><span class="knob"></span></label>
+            </div>
+            <div class="rule-row">
+              <div><div class="t">Interior Mode</div><div class="d">Advanced: call interior color on foot sightings</div></div>
+              <label class="switch"><input type="checkbox" id="rule-interior"><span class="track"></span><span class="knob"></span></label>
+            </div>
+            <div class="rule-row">
+              <div><div class="t">VW Bus eligible</div><div class="d">Buses just don't count. That's the rule.</div></div>
+              <label class="switch"><input type="checkbox" disabled><span class="track"></span><span class="knob"></span></label>
+            </div>
+
+            <div class="section-label">Open Rulings</div>
+            <div id="open-rulings"></div>
+            <button class="add-member-btn" id="open-ask-rivalry">+ Ask the rivalry a question</button>
+
+            <div class="section-label">Ruling Log</div>
+            <div id="ruling-log"></div>
+
+            <div class="section-label">Rivalry</div>
+            <button class="add-member-btn" id="open-invite-team">+ Invite a team to this rivalry</button>
+            <div class="card">
+              <div class="trip-name" style="margin-bottom:4px;">Currently competing</div>
+              <div class="trip-meta">Team Reineke &amp; Team Ouellette · ruleset locked in Mar 2026</div>
+            </div>
+          </section>
+
+        </div>
+
+        <!-- LOG A CALL SHEET -->
+        <div class="sheet" id="sheet">
+          <div class="sheet-panel">
+            <button class="close-sheet" id="close-sheet">Cancel</button>
+            <div class="grabber"></div>
+            <h3>Log a call</h3>
+            <p class="sub">Name every color on the car. Precision wins ties.</p>
+
+            <div class="chips" id="color-chips"></div>
+            <p class="photo-req-note" style="margin-top:-6px;">Official VW factory colors — name every one on the car.</p>
+
+            <div class="seg" id="body-style">
+              <button data-style="Beetle" data-mult="1" aria-pressed="true">Beetle</button>
+              <button data-style="Convertible" data-mult="2" aria-pressed="false">Convertible</button>
+              <button data-style="New Beetle" data-mult="1" aria-pressed="false">New Beetle</button>
+              <button data-style="Thing" data-mult="10" aria-pressed="false">Thing</button>
+              <button data-style="Bus" data-mult="0" aria-pressed="false" disabled>Bus</button>
+            </div>
+            <p class="mult-note" id="mult-note">1 point · standard Beetle</p>
+
+            <div id="interior-block" style="display:none;">
+              <div class="chips" id="interior-chips">
+                <button class="chip" aria-pressed="false" data-color="Gray interior">Gray interior</button>
+                <button class="chip" aria-pressed="false" data-color="Tan interior">Tan interior</button>
+                <button class="chip" aria-pressed="false" data-color="Black interior">Black interior</button>
+              </div>
+            </div>
+
+            <div id="photo-block">
+              <div class="section-label" style="margin-top:2px;">Add a photo (optional)</div>
+              <label class="photo-drop" id="photo-drop" for="photo-input">
+                <span id="photo-placeholder">📷 Attach a photo</span>
+                <img id="photo-preview" style="display:none;" alt="Attached sighting photo">
+              </label>
+              <input type="file" accept="image/*" id="photo-input" style="display:none;">
+              <p class="photo-req-note" id="photo-req-note">Not required — but a nice keepsake, and handy if the call's ever disputed.</p>
+            </div>
+
+            <button class="log-submit" id="submit-log">Log Hit <span class="pv" id="pv">+1 pt</span></button>
+          </div>
+        </div>
+
+        <!-- ADD MEMBER SHEET -->
+        <div class="sheet" id="sheet-member">
+          <div class="sheet-panel">
+            <button class="close-sheet" id="close-sheet-member">Cancel</button>
+            <div class="grabber"></div>
+            <h3>Invite a member</h3>
+            <p class="sub">They'll join Team Reineke and can start logging calls right away.</p>
+            <input class="text-input" id="member-name-input" type="text" placeholder="Their name" maxlength="24">
+            <button class="log-submit" id="submit-member">Send Invite</button>
+          </div>
+        </div>
+
+        <!-- MY BUG-DEX SHEET -->
+        <div class="sheet" id="sheet-bugdex">
+          <div class="sheet-panel">
+            <button class="close-sheet" id="close-sheet-bugdex">Close</button>
+            <div class="grabber"></div>
+            <h3>🪲 My Bug-Dex</h3>
+            <p class="sub" id="bugdex-sub">Every color and body style you've personally called — 5 of 56 found.</p>
+            <p class="photo-req-note" style="margin-top:-8px;">This one's just for you — no photo needed, it's not a competition.</p>
+            <div id="bugdex-grid"></div>
+            <button class="log-submit" id="bugdex-to-leaderboard" style="margin-top:14px;">See Global Leaderboard →</button>
+          </div>
+        </div>
+
+        <!-- GLOBAL LEADERBOARD SHEET -->
+        <div class="sheet" id="sheet-leaderboard">
+          <div class="sheet-panel">
+            <button class="close-sheet" id="close-sheet-leaderboard">Close</button>
+            <div class="grabber"></div>
+            <h3>🌍 Global Leaderboard</h3>
+            <p class="sub">Ranked by points. Only photo-verified calls count toward your global rank — strangers can't vouch for you the way your family can.</p>
+            <div class="seg" id="lb-period" style="margin-bottom:14px;">
+              <button data-period="weekly" aria-pressed="true">This Week</button>
+              <button data-period="annual" aria-pressed="false">This Year</button>
+            </div>
+            <div id="lb-list"></div>
+          </div>
+        </div>
+
+        <!-- INVITE A TEAM SHEET -->
+        <div class="sheet" id="sheet-invite-team">
+          <div class="sheet-panel">
+            <button class="close-sheet" id="close-sheet-invite-team">Cancel</button>
+            <div class="grabber"></div>
+            <h3>Invite a team</h3>
+            <p class="sub">Send this to another family. When they enter it, they'll set up their own team and start competing against Team Reineke under this rivalry's shared ruleset.</p>
+            <div class="invite-row" style="margin-bottom:16px;">
+              <div style="font-family:var(--font-mono); font-size:20px; letter-spacing:.08em;">RIVAL-K92M</div>
+              <button class="copy-btn" id="copy-rivalry-code">Copy</button>
+            </div>
+            <button class="log-submit" id="close-invite-team-done">Done</button>
+          </div>
+        </div>
+
+        <!-- ASK THE RIVALRY SHEET -->
+        <div class="sheet" id="sheet-ask">
+          <div class="sheet-panel">
+            <button class="close-sheet" id="close-sheet-ask">Cancel</button>
+            <div class="grabber"></div>
+            <h3>Ask the rivalry</h3>
+            <p class="sub">Describe the scenario. Both families vote — majority becomes the ruling.</p>
+            <input class="text-input" id="ask-input" type="text" placeholder="e.g. Does a convertible with the top up still get 2 hits?">
+            <button class="log-submit" id="submit-ask">Submit Question</button>
+          </div>
+        </div>
+
+        <!-- ROUND WIN OVERLAY -->
+        <div class="win-overlay" id="win-overlay">
+          <div class="win-card">
+            <div class="confetti" id="confetti"></div>
+            <p class="win-eyebrow">🏁 Round Over</p>
+            <div id="win-bug" style="display:flex;justify-content:center;margin-bottom:10px;"></div>
+            <h3 class="win-title" id="win-title">Team Reineke wins the round!</h3>
+            <div class="win-score" id="win-score">21–17</div>
+            <button class="win-new-round" id="win-new-round">Start New Round</button>
+          </div>
+        </div>
+
+        <!-- NOTIFICATION DEMO -->
+        <div class="notif" id="notif">
+          <div class="badge">🐞</div>
+          <div>
+            <b id="notif-title">Team Reineke spotted a Thing!</b>
+            <p id="notif-body">+10 points — they're now in the lead.</p>
+            <p class="cap" id="notif-cap">What Team Ouellette would see, right now</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="tabbar">
+        <div class="tabbar-inner">
+          <button class="tab active" data-panel="score"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4a2 2 0 0 0 2 5M17 6h3a2 2 0 0 1-2 5"/></svg><span>Score</span></button>
+          <button class="tab" data-panel="trip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><path d="M12 4v2M12 18v2M4 12h2M18 12h2"/></svg><span>Trip</span></button>
+          <button class="tab" data-panel="history"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg><span>History</span></button>
+          <button class="tab" data-panel="team"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.3"/><path d="M15.5 14.2c2.3.3 4 2.2 4 4.8"/></svg><span>Team</span></button>
+          <button class="tab" data-panel="rules"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 4h6l4 4v12H5V4h4Z"/><path d="M9 11h6M9 15h6"/></svg><span>Rules</span></button>
+        </div>
+      </div>
+      <div class="home-ind"></div>
+    </div>
+  </div>
+
+  <p class="hint">Tap the tabs to move around, start a trip, and log a Punch Buggy call — the scoreboard and notification respond live.</p>
+</div>
+<script>
+(function(){
+  var reinekeScore = 14;
+  var ouelletteScore = 9;
+  var roundTarget = 21;
+  var tripActive = false;
+  var tripStart = null;
+  var tripCalls = 0;
+  var clockTimer = null;
+  var rules = { convertible:true, thing:true, interior:false };
+  var teamData = {
+    reineke: {
+      label:'Team Reineke',
+      members:[
+        { name:'Nicole', pts:6, you:true },
+        { name:'Sam', pts:4, you:false },
+        { name:'Jamie', pts:3, you:false },
+        { name:'Theo', pts:1, you:false }
+      ]
+    },
+    ouellette: {
+      label:'Team Ouellette',
+      members:[
+        { name:'Daniel', pts:4, you:false },
+        { name:'Roger', pts:3, you:false },
+        { name:'Roseanne', pts:2, you:false }
+      ]
+    }
+  };
+  var activeTeam = 'reineke';
+  var activeMember = 0;
+  var pastRounds = [
+    { winner:'Team Reineke', score:'21–17', when:'Jul 30' }
+  ];
+
+  var globalWeekly = [
+    { name:'T. Nakamura', loc:'Osaka, Japan', pts:19 },
+    { name:'A. Kowalski', loc:'Kraków, Poland', pts:17 },
+    { name:'R. Silva', loc:'São Paulo, Brazil', pts:15 },
+    { name:'M. O’Brien', loc:'Dublin, Ireland', pts:13 },
+    { name:'S. Patel', loc:'Mumbai, India', pts:11 },
+    { name:'J. Meyer', loc:'Hamburg, Germany', pts:9 },
+    { name:'L. Andersson', loc:'Gothenburg, Sweden', pts:7 },
+    { name:'C. Dubois', loc:'Lyon, France', pts:5 },
+    { name:'K. Tan', loc:'Auckland, New Zealand', pts:3 }
+  ];
+  var globalAnnual = [
+    { name:'A. Kowalski', loc:'Kraków, Poland', pts:612 },
+    { name:'T. Nakamura', loc:'Osaka, Japan', pts:588 },
+    { name:'R. Silva', loc:'São Paulo, Brazil', pts:544 },
+    { name:'J. Meyer', loc:'Hamburg, Germany', pts:501 },
+    { name:'S. Patel', loc:'Mumbai, India', pts:470 },
+    { name:'M. O’Brien', loc:'Dublin, Ireland', pts:455 },
+    { name:'L. Andersson', loc:'Gothenburg, Sweden', pts:398 },
+    { name:'C. Dubois', loc:'Lyon, France', pts:340 },
+    { name:'K. Tan', loc:'Auckland, New Zealand', pts:210 }
+  ];
+  var youGlobal = { weekly:4, annual:184 };
+  var lbPeriod = 'weekly';
+  var youLifetime = 47;
+  var BODY_STYLES_COLLECTIBLE = ['Beetle','Convertible','New Beetle','Thing'];
+  var myBugDex = {};
+  ['Texas Yellow|Beetle','Kasan Red|Convertible','Marina Blue|Beetle','Biscay Blue|New Beetle','Bahia Red|Thing'].forEach(function(k){ myBugDex[k] = true; });
+
+  function $(s,r){ return (r||document).querySelector(s); }
+  function $all(s,r){ return Array.prototype.slice.call((r||document).querySelectorAll(s)); }
+  function initials(n){ return n.trim().charAt(0).toUpperCase(); }
+  function closeAllSheets(){ $all('.sheet').forEach(function(s){ s.classList.remove('open'); }); }
+
+  // official 1973 VW factory paint colors, from the brochure
+  var OFFICIAL_COLORS = {
+    'Texas Yellow':'#D2A227', 'Kasan Red':'#A32C2E', 'Marina Blue':'#6FA3B5', 'Pastel White':'#EDE8DA',
+    'Kansas Beige':'#C7BCA8', 'Bright Orange':'#E2661E', 'Biscay Blue':'#1D3E78', 'Sumatra Green':'#205C3F',
+    'Phoenix Red':'#D13A2A', 'Ravenna Green':'#A9C93A', 'Amber':'#DE7A1E', 'Bahia Red':'#8B1E33',
+    'Saturn Yellow':'#E0C21C', 'Olympic Blue':'#29A6D6'
+  };
+
+  function beetleIcon(fill, w){
+    w = w || 22;
+    var h = Math.round(w * 0.42);
+    return '<svg viewBox="0 0 100 42" width="'+w+'" height="'+h+'" aria-hidden="true">'
+      + '<path d="M2,33 C2,21 10,11 25,10 C32,9 34,5 45,5 C58,5 62,10 70,11 C85,12 98,19 98,31 C98,34 95,35 90,35 L10,35 C5,35 2,35 2,33 Z" fill="'+fill+'"/>'
+      + '<circle cx="23" cy="34" r="6" fill="rgba(0,0,0,.38)"/>'
+      + '<circle cx="78" cy="34" r="6" fill="rgba(0,0,0,.38)"/>'
+      + '</svg>';
+  }
+
+  function renderColorChips(){
+    var box = $('#color-chips');
+    box.innerHTML = Object.keys(OFFICIAL_COLORS).map(function(name){
+      return '<button class="chip" aria-pressed="false" data-color="'+name+'">'+beetleIcon(OFFICIAL_COLORS[name], 20)+'<span>'+name+'</span></button>';
+    }).join('');
+    $all('.chip', box).forEach(function(chip){
+      chip.addEventListener('click', function(){
+        var on = chip.getAttribute('aria-pressed') === 'true';
+        chip.setAttribute('aria-pressed', on ? 'false' : 'true');
+        var c = chip.dataset.color;
+        if(on){ selectedColors = selectedColors.filter(function(x){return x!==c;}); }
+        else{ selectedColors.push(c); }
+      });
+    });
+  }
+  function currentMembers(){ return teamData[activeTeam].members; }
+
+  function renderRoster(){
+    var mem = currentMembers();
+    var sorted = mem.slice().sort(function(a,b){ return b.pts - a.pts; });
+    var top = sorted[0];
+    $('#team-panel-title').textContent = teamData[activeTeam].label;
+    $('#invite-note').textContent = 'Anyone with this code can join ' + teamData[activeTeam].label + ' and start logging calls under their own name.';
+    $('#member-count').textContent = mem.length;
+    $('#roster-list').innerHTML = mem.map(function(m){
+      var crown = (m === top && m.pts > 0) ? ' 👑' : '';
+      var tag = m.you ? '<span class="you-tag">YOU</span>' : '';
+      return '<div class="roster-row">'
+        + '<div class="avatar" style="background:var(--'+activeTeam+')">'+initials(m.name)+'</div>'
+        + '<div class="info"><div class="rname">'+m.name+crown+' '+tag+'</div></div>'
+        + '<div class="rpts">'+m.pts+' pts</div>'
+        + '</div>';
+    }).join('');
+  }
+
+  function renderSpotters(){
+    ['reineke','ouellette'].forEach(function(team){
+      $('#spotters-'+team).innerHTML = teamData[team].members.slice().sort(function(a,b){ return b.pts-a.pts; }).map(function(m){
+        return '<div class="spot-row"><span class="nm">'+m.name+'</span><b>'+m.pts+'</b></div>';
+      }).join('');
+    });
+  }
+
+  function prependMoment(teamKey, callerName, style, label, pts){
+    var feed = $('#panel-score');
+    var container = feed.querySelector('.moment') ? feed.querySelector('.moment').parentNode : null;
+    if(!container) return;
+    var teamColor = teamKey === 'reineke' ? 'var(--reineke)' : 'var(--ouellette)';
+    var teamLabel = teamData[teamKey].label;
+    var verb = style === 'Thing' ? ' spotted a <b>Thing</b> — ' : (style === 'Convertible' ? ' called a <b>Convertible</b>, ' : ': ');
+    var el = document.createElement('div');
+    el.className = 'moment';
+    el.innerHTML = '<span class="moment-icon">'+beetleIcon(teamColor,22)+'</span><p>'+teamLabel+verb+label.replace(callerName+' · ','')+' <span class="pts" style="color:var(--green)">+'+pts+'</span><span class="when">Just now</span></p>';
+    var firstMoment = container.querySelector('.moment');
+    if(firstMoment){ container.insertBefore(el, firstMoment); } else { container.appendChild(el); }
+  }
+
+  function renderSwitcher(){
+    var m = currentMembers()[activeMember];
+    $('#switch-avatar').textContent = initials(m.name);
+    $('#switch-avatar').style.background = 'var(--'+activeTeam+')';
+    $('#switch-name').textContent = m.name + (m.you ? ' (you)' : '');
+  }
+
+  $('#cycle-member').addEventListener('click', function(){
+    activeMember = (activeMember + 1) % currentMembers().length;
+    renderSwitcher();
+  });
+
+  $all('#team-toggle button').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      activeTeam = btn.dataset.team;
+      activeMember = 0;
+      $all('#team-toggle button').forEach(function(b){ b.setAttribute('aria-pressed', b === btn ? 'true' : 'false'); });
+      renderSwitcher();
+      renderRoster();
+    });
+  });
+
+  $('#open-add-member').addEventListener('click', function(){
+    closeAllSheets();
+    $('#member-name-input').value = '';
+    $('#sheet-member').classList.add('open');
+  });
+  $('#close-sheet-member').addEventListener('click', function(){ $('#sheet-member').classList.remove('open'); });
+  $('#sheet-member').addEventListener('click', function(e){ if(e.target === $('#sheet-member')) $('#sheet-member').classList.remove('open'); });
+  $('#submit-member').addEventListener('click', function(){
+    var name = $('#member-name-input').value.trim();
+    if(!name) return;
+    currentMembers().push({ name:name, pts:0, you:false });
+    renderRoster();
+    renderSpotters();
+    $('#sheet-member').classList.remove('open');
+  });
+
+  $('#copy-code').addEventListener('click', function(){
+    try{ navigator.clipboard.writeText('BUG-7X2Q'); }catch(e){}
+    var b = $('#copy-code');
+    b.textContent = 'Copied'; b.classList.add('copied');
+    setTimeout(function(){ b.textContent = 'Copy'; b.classList.remove('copied'); }, 1500);
+  });
+
+  $('#open-invite-team').addEventListener('click', function(){
+    closeAllSheets();
+    $('#sheet-invite-team').classList.add('open');
+  });
+  $('#close-sheet-invite-team').addEventListener('click', function(){ $('#sheet-invite-team').classList.remove('open'); });
+  $('#close-invite-team-done').addEventListener('click', function(){ $('#sheet-invite-team').classList.remove('open'); });
+  $('#sheet-invite-team').addEventListener('click', function(e){ if(e.target === $('#sheet-invite-team')) $('#sheet-invite-team').classList.remove('open'); });
+  $('#copy-rivalry-code').addEventListener('click', function(){
+    try{ navigator.clipboard.writeText('RIVAL-K92M'); }catch(e){}
+    var b = $('#copy-rivalry-code');
+    b.textContent = 'Copied'; b.classList.add('copied');
+    setTimeout(function(){ b.textContent = 'Copy'; b.classList.remove('copied'); }, 1500);
+  });
+
+  // ---- round / win condition ----
+  function renderRoundTracks(){
+    var rPct = Math.min(100, reinekeScore/roundTarget*100);
+    var oPct = Math.min(100, ouelletteScore/roundTarget*100);
+    $('#round-tracks').innerHTML =
+      '<div><div class="round-meta"><span style="color:var(--reineke)">Reineke '+reinekeScore+'</span><span>'+roundTarget+' to win</span></div>'
+      + '<div class="round-track"><div class="round-fill r" style="width:'+rPct+'%"></div>'
+      + '<span class="round-marker" style="left:'+rPct+'%">'+beetleIcon('var(--reineke)',20)+'</span></div></div>'
+      + '<div><div class="round-meta"><span style="color:var(--ouellette)">Ouellette '+ouelletteScore+'</span><span>'+roundTarget+' to win</span></div>'
+      + '<div class="round-track"><div class="round-fill o" style="width:'+oPct+'%"></div>'
+      + '<span class="round-marker" style="left:'+oPct+'%">'+beetleIcon('var(--ouellette)',20)+'</span></div></div>';
+  }
+
+  function renderBugDex(){
+    var found = Object.keys(myBugDex).length;
+    var total = Object.keys(OFFICIAL_COLORS).length * BODY_STYLES_COLLECTIBLE.length;
+    $('#bugdex-sub').textContent = youLifetime + ' lifetime points · ' + found + ' of ' + total + ' colors and styles found.';
+    $('#bugdex-count-inline').textContent = found;
+    $('#bugdex-grid').innerHTML = Object.keys(OFFICIAL_COLORS).map(function(color){
+      var hex = OFFICIAL_COLORS[color];
+      var cells = BODY_STYLES_COLLECTIBLE.map(function(style){
+        var got = !!myBugDex[color + '|' + style];
+        var title = color + ' ' + style + (got ? ' — found' : ' — not yet found');
+        return '<span title="'+title+'" style="opacity:'+(got ? '1' : '.32')+'">'+beetleIcon(got ? hex : 'var(--ink-faint)', 18)+'</span>';
+      }).join('');
+      return '<div class="dex-row"><span class="dex-color-name">'+color+'</span><div class="dex-cells">'+cells+'</div></div>';
+    }).join('');
+  }
+
+  $('#open-bugdex').addEventListener('click', function(){
+    closeAllSheets();
+    renderBugDex();
+    $('#sheet-bugdex').classList.add('open');
+  });
+  $('#close-sheet-bugdex').addEventListener('click', function(){ $('#sheet-bugdex').classList.remove('open'); });
+  $('#sheet-bugdex').addEventListener('click', function(e){ if(e.target === $('#sheet-bugdex')) $('#sheet-bugdex').classList.remove('open'); });
+  $('#bugdex-to-leaderboard').addEventListener('click', function(){
+    closeAllSheets();
+    renderLeaderboard();
+    $('#sheet-leaderboard').classList.add('open');
+  });
+
+  function renderLeaderboard(){
+    var base = lbPeriod === 'weekly' ? globalWeekly : globalAnnual;
+    var youPts = lbPeriod === 'weekly' ? youGlobal.weekly : youGlobal.annual;
+    var rows = base.map(function(p){ return { name:p.name, loc:p.loc, pts:p.pts, you:false }; });
+    rows.push({ name:'N. Reineke', loc:'Team Reineke', pts:youPts, you:true });
+    rows.sort(function(a,b){ return b.pts - a.pts; });
+    $('#lb-list').innerHTML = rows.map(function(r, i){
+      return '<div class="lb-row'+(r.you?' you':'')+'"><span class="lb-rank">#'+(i+1)+'</span>'
+        + '<div class="lb-info"><div class="lb-name">'+r.name+(r.you?' <span class="you-tag">YOU</span>':'')+'</div><div class="lb-loc">'+r.loc+'</div></div>'
+        + '<span class="lb-pts">'+r.pts+'</span></div>';
+    }).join('');
+  }
+
+  $('#open-leaderboard').addEventListener('click', function(){
+    closeAllSheets();
+    renderLeaderboard();
+    $('#sheet-leaderboard').classList.add('open');
+  });
+  $('#close-sheet-leaderboard').addEventListener('click', function(){ $('#sheet-leaderboard').classList.remove('open'); });
+  $('#sheet-leaderboard').addEventListener('click', function(e){ if(e.target === $('#sheet-leaderboard')) $('#sheet-leaderboard').classList.remove('open'); });
+  $all('#lb-period button').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      lbPeriod = btn.dataset.period;
+      $all('#lb-period button').forEach(function(b){ b.setAttribute('aria-pressed', b === btn ? 'true' : 'false'); });
+      renderLeaderboard();
+    });
+  });
+
+  function renderPastRounds(){
+    $('#past-rounds').innerHTML = pastRounds.map(function(r){
+      return '<div class="card round-card"><span class="round-trophy">🏆</span>'
+        + '<div class="info"><div class="rt-name">'+r.winner+' won, '+r.score+'</div><div class="rt-meta">'+r.when+'</div></div></div>';
+    }).join('') || '<p class="empty">No rounds finished yet.</p>';
+  }
+
+  function spawnConfetti(){
+    var colors = ['var(--reineke)','var(--ouellette)','var(--rust)','var(--green)'];
+    var box = $('#confetti');
+    box.innerHTML = '';
+    for(var i=0;i<14;i++){
+      var el = document.createElement('i');
+      el.style.left = (Math.random()*100)+'%';
+      el.style.background = colors[i % colors.length];
+      el.style.animationDuration = (1.2 + Math.random()*0.8)+'s';
+      el.style.animationDelay = (Math.random()*0.3)+'s';
+      box.appendChild(el);
+    }
+  }
+
+  function triggerWin(teamKey){
+    var name = teamKey === 'reineke' ? 'Team Reineke' : 'Team Ouellette';
+    var mine = teamKey === 'reineke' ? reinekeScore : ouelletteScore;
+    var theirs = teamKey === 'reineke' ? ouelletteScore : reinekeScore;
+    pastRounds.unshift({ winner:name, score: mine+'–'+theirs, when:'Just now' });
+    $('#win-title').textContent = name + ' wins the round!';
+    $('#win-score').textContent = mine + '–' + theirs;
+    $('#win-bug').innerHTML = beetleIcon(teamKey === 'reineke' ? 'var(--reineke)' : 'var(--ouellette)', 46);
+    spawnConfetti();
+    $('#win-overlay').classList.add('show');
+  }
+
+  function checkRoundWin(){
+    if(reinekeScore >= roundTarget){ triggerWin('reineke'); }
+    else if(ouelletteScore >= roundTarget){ triggerWin('ouellette'); }
+  }
+
+  $('#target-minus').addEventListener('click', function(){
+    roundTarget = Math.max(5, roundTarget - 1);
+    $('#round-target-display').textContent = roundTarget;
+    renderRoundTracks();
+  });
+  $('#target-plus').addEventListener('click', function(){
+    roundTarget = Math.min(99, roundTarget + 1);
+    $('#round-target-display').textContent = roundTarget;
+    renderRoundTracks();
+  });
+
+  $('#win-new-round').addEventListener('click', function(){
+    reinekeScore = 0; ouelletteScore = 0;
+    teamData.reineke.members.forEach(function(m){ m.pts = 0; });
+    teamData.ouellette.members.forEach(function(m){ m.pts = 0; });
+    $('#score-reineke').textContent = 0;
+    $('#score-ouellette').textContent = 0;
+    $('#lead-pill').textContent = 'New round — tied at 0';
+    renderRoster();
+    renderSpotters();
+    renderRoundTracks();
+    renderPastRounds();
+    tripCalls = 0;
+    $('#call-list').innerHTML = '<div style="text-align:center;padding:16px 0 6px;"><div style="display:flex;justify-content:center;margin-bottom:6px;opacity:.32;">'+beetleIcon('var(--ink-faint)',36)+'</div><p class="empty" style="padding:0;">No calls yet. Go find a Beetle.</p></div>';
+    $('#win-overlay').classList.remove('show');
+  });
+
+  renderRoster();
+  renderSpotters();
+  renderSwitcher();
+  renderRoundTracks();
+  renderPastRounds();
+
+  // ---- rulings ----
+  var rulingId = 2;
+  var openRulings = [
+    { id:1, q:"Does a Beetle up on blocks — not driveable — still count?", reineke:null, ouellette:null }
+  ];
+  var rulingLog = [
+    { q:"Does a Bug-shaped UFO count?", verdict:"No — it must be an earthbound car obeying the laws of physics." },
+    { q:"Do VW Buses count?", verdict:"No. Old ones, new ones, the electric one — none of them. That's the rule." }
+  ];
+
+  function verdictFor(ruling){
+    if(ruling.reineke === ruling.ouellette){
+      if(ruling.id === 1){
+        return ruling.reineke === 'yes'
+          ? "Yes — a parked Bug is still a Bug. Rust, blocks, and bad luck don't revoke its identity."
+          : "No — if it can't drive, it's scenery, not a sighting.";
+      }
+      return ruling.reineke === 'yes' ? "Yes — the rivalry agrees. It counts." : "No — the rivalry agrees. It doesn't count.";
+    }
+    return "SPLIT DECISION — no consensus. Per House Rules Override Other Rules, each family's own call stands at home.";
+  }
+
+  function renderRulings(){
+    $('#open-rulings').innerHTML = openRulings.map(function(r){
+      function voteBtns(team){
+        var val = r[team];
+        return '<button class="vote-btn'+(val==='yes'?' picked-yes':'')+'" data-id="'+r.id+'" data-team="'+team+'" data-v="yes">Yes</button>'
+             + '<button class="vote-btn'+(val==='no'?' picked-no':'')+'" data-id="'+r.id+'" data-team="'+team+'" data-v="no">No</button>';
+      }
+      return '<div class="card ruling-card">'
+        + '<p class="ruling-q">"'+r.q+'"</p>'
+        + '<div class="vote-row">'
+        + '<div class="vote-team"><span class="team-lbl" style="color:var(--reineke)">Reineke</span>'+voteBtns('reineke')+'<span class="vote-status">'+(r.reineke?r.reineke:'waiting')+'</span></div>'
+        + '<div class="vote-team"><span class="team-lbl" style="color:var(--ouellette)">Ouellette</span>'+voteBtns('ouellette')+'<span class="vote-status">'+(r.ouellette?r.ouellette:'waiting')+'</span></div>'
+        + '</div></div>';
+    }).join('') || '<p class="empty">No open questions right now.</p>';
+
+    $('#ruling-log').innerHTML = rulingLog.map(function(r){
+      return '<div class="card verdict-card">'
+        + '<p class="verdict-q">"'+r.q+'"</p>'
+        + '<span class="verdict-label">RULING</span>'
+        + '<p class="verdict-text">'+r.verdict+'</p>'
+        + '</div>';
+    }).join('');
+  }
+
+  $('#open-rulings').addEventListener('click', function(e){
+    var btn = e.target.closest('.vote-btn');
+    if(!btn) return;
+    var id = parseInt(btn.dataset.id, 10);
+    var ruling = openRulings.find(function(r){ return r.id === id; });
+    if(!ruling) return;
+    ruling[btn.dataset.team] = btn.dataset.v;
+    if(ruling.reineke && ruling.ouellette){
+      var verdict = verdictFor(ruling);
+      openRulings = openRulings.filter(function(r){ return r.id !== id; });
+      rulingLog.unshift({ q: ruling.q, verdict: verdict });
+    }
+    renderRulings();
+  });
+
+  $('#open-ask-rivalry').addEventListener('click', function(){
+    closeAllSheets();
+    $('#ask-input').value = '';
+    $('#sheet-ask').classList.add('open');
+  });
+  $('#close-sheet-ask').addEventListener('click', function(){ $('#sheet-ask').classList.remove('open'); });
+  $('#sheet-ask').addEventListener('click', function(e){ if(e.target === $('#sheet-ask')) $('#sheet-ask').classList.remove('open'); });
+  $('#submit-ask').addEventListener('click', function(){
+    var q = $('#ask-input').value.trim();
+    if(!q) return;
+    rulingId++;
+    openRulings.push({ id: rulingId, q: q, reineke: null, ouellette: null });
+    renderRulings();
+    $('#sheet-ask').classList.remove('open');
+  });
+
+  renderRulings();
+
+  // tabs
+  $all('.tab').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      $all('.tab').forEach(function(t){ t.classList.remove('active'); });
+      btn.classList.add('active');
+      $all('.panel').forEach(function(p){ p.classList.remove('active'); });
+      $('#panel-'+btn.dataset.panel).classList.add('active');
+    });
+  });
+
+  // trip start/end
+  function fmtClock(sec){
+    var m = Math.floor(sec/60), s = sec%60;
+    return m+':' + (s<10?'0':'') + s;
+  }
+  $('#start-trip').addEventListener('click', function(){
+    tripActive = true; tripStart = Date.now(); tripCalls = 0;
+    $('#trip-idle').style.display = 'none';
+    $('#trip-active').style.display = 'block';
+    $('#trip-sub').textContent = 'Trip in progress. Every sighting counts once.';
+    clockTimer = setInterval(function(){
+      $('#trip-clock').textContent = 'Trip in progress · ' + fmtClock(Math.floor((Date.now()-tripStart)/1000));
+    }, 1000);
+  });
+  $('#end-trip').addEventListener('click', function(){
+    tripActive = false; clearInterval(clockTimer);
+    $('#trip-idle').style.display = 'block';
+    $('#trip-active').style.display = 'none';
+    $('#trip-sub').textContent = "Between two points, until the engine's off long enough for the fan to stop.";
+    $('#call-list').innerHTML = '<div style="text-align:center;padding:16px 0 6px;"><div style="display:flex;justify-content:center;margin-bottom:6px;opacity:.32;">'+beetleIcon('var(--ink-faint)',36)+'</div><p class="empty" style="padding:0;">No calls yet. Go find a Beetle.</p></div>';
+  });
+
+  // rules toggles
+  $('#rule-convertible').addEventListener('change', function(e){ rules.convertible = e.target.checked; updatePreview(); });
+  $('#rule-thing').addEventListener('change', function(e){ rules.thing = e.target.checked; updatePreview(); });
+  $('#rule-interior').addEventListener('change', function(e){
+    rules.interior = e.target.checked;
+    $('#interior-block').style.display = rules.interior ? 'block' : 'none';
+  });
+
+  // sheet open/close
+  var sheet = $('#sheet');
+  var selectedColors = [];
+  var selectedInterior = [];
+  var currentStyle = 'Beetle', currentMult = 1;
+  var photoDataUrl = null;
+
+  function resetSheet(){
+    selectedColors = []; selectedInterior = []; currentStyle='Beetle'; currentMult=1; photoDataUrl = null;
+    $all('.chip', $('#color-chips')).forEach(function(c){ c.setAttribute('aria-pressed','false'); });
+    $all('.chip', $('#interior-chips')).forEach(function(c){ c.setAttribute('aria-pressed','false'); });
+    $all('#body-style button').forEach(function(b){ b.setAttribute('aria-pressed', b.dataset.style==='Beetle' ? 'true':'false'); });
+    $('#photo-input').value = '';
+    $('#photo-preview').style.display = 'none';
+    $('#photo-placeholder').style.display = 'block';
+    $('#photo-req-note').textContent = "Not required — but a nice keepsake, and handy if the call's ever disputed.";
+    updatePreview();
+  }
+
+  $('#photo-input').addEventListener('change', function(e){
+    var file = e.target.files && e.target.files[0];
+    if(!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev){
+      photoDataUrl = ev.target.result;
+      $('#photo-preview').src = photoDataUrl;
+      $('#photo-preview').style.display = 'block';
+      $('#photo-placeholder').style.display = 'none';
+      $('#photo-req-note').textContent = 'Photo attached — nice find.';
+    };
+    reader.readAsDataURL(file);
+  });
+
+  $('#open-log').addEventListener('click', function(){
+    closeAllSheets();
+    resetSheet();
+    sheet.classList.add('open');
+  });
+  $('#close-sheet').addEventListener('click', function(){ sheet.classList.remove('open'); });
+  sheet.addEventListener('click', function(e){ if(e.target === sheet) sheet.classList.remove('open'); });
+
+  renderColorChips();
+
+  $all('.chip', $('#interior-chips')).forEach(function(chip){
+    chip.addEventListener('click', function(){
+      var on = chip.getAttribute('aria-pressed') === 'true';
+      chip.setAttribute('aria-pressed', on ? 'false' : 'true');
+      var c = chip.dataset.color;
+      if(on){ selectedInterior = selectedInterior.filter(function(x){return x!==c;}); }
+      else{ selectedInterior.push(c); }
+    });
+  });
+
+  function effectiveMult(style, baseMult){
+    if(style === 'Convertible') return rules.convertible ? 2 : 1;
+    if(style === 'Thing') return rules.thing ? 10 : 1;
+    return baseMult;
+  }
+
+  $all('#body-style button').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      if(btn.disabled) return;
+      $all('#body-style button').forEach(function(b){ b.setAttribute('aria-pressed','false'); });
+      btn.setAttribute('aria-pressed','true');
+      currentStyle = btn.dataset.style;
+      currentMult = parseInt(btn.dataset.mult, 10);
+      updatePreview();
+    });
+  });
+
+  function updatePreview(){
+    var m = effectiveMult(currentStyle, currentMult);
+    var noteMap = {
+      'Beetle':'standard Beetle',
+      'Convertible': rules.convertible ? 'rarity bonus active' : 'bonus off in house rules',
+      'New Beetle':'counts the same as a classic',
+      'Thing':'the unicorn clause',
+      'Bus':"doesn't count, sorry"
+    };
+    $('#mult-note').textContent = m + (m===1?' point · ':' points · ') + noteMap[currentStyle];
+    $('#pv').textContent = '+' + m + (m===1?' pt':' pts');
+  }
+  updatePreview();
+
+  function animateScore(teamKey, newVal){
+    var el = $(teamKey === 'reineke' ? '#score-reineke' : '#score-ouellette');
+    var start = teamKey === 'reineke' ? reinekeScore : ouelletteScore;
+    var startTime = performance.now();
+    function step(t){
+      var p = Math.min(1, (t-startTime)/500);
+      el.textContent = Math.round(start + (newVal-start)*p);
+      if(p<1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+    if(teamKey === 'reineke'){ reinekeScore = newVal; } else { ouelletteScore = newVal; }
+    var diff = reinekeScore - ouelletteScore;
+    $('#lead-pill').textContent = diff === 0 ? 'Tied up' : (diff > 0 ? 'Team Reineke leads by ' + diff : 'Team Ouellette leads by ' + (-diff));
+    renderRoundTracks();
+    checkRoundWin();
+  }
+
+  function showNotif(style, teamKey, callerName, photo){
+    var selfLabel = teamData[teamKey].label;
+    var otherLabel = teamData[teamKey === 'reineke' ? 'ouellette' : 'reineke'].label;
+    var titles = {
+      'Thing': callerName + ' (' + selfLabel + ') spotted a Thing!',
+      'Convertible': callerName + ' (' + selfLabel + ') called a Convertible!'
+    };
+    $('#notif-title').textContent = titles[style] || (callerName + ' logged a call!');
+    var m = effectiveMult(style, style==='Thing'?10:(style==='Convertible'?2:1));
+    $('#notif-body').textContent = '+' + m + ' points, photo verified — ' + selfLabel + ' now leads.';
+    $('#notif-cap').textContent = 'What ' + otherLabel + ' would see, right now';
+    var badge = $('#notif').querySelector('.badge');
+    if(photo){ badge.style.backgroundImage = 'url('+photo+')'; badge.style.backgroundSize = 'cover'; badge.textContent = ''; }
+    else { badge.style.backgroundImage = ''; badge.textContent = '🐞'; }
+    var n = $('#notif');
+    n.classList.add('show');
+    clearTimeout(n._t);
+    n._t = setTimeout(function(){ n.classList.remove('show'); }, 3200);
+  }
+
+  $('#submit-log').addEventListener('click', function(){
+    if(selectedColors.length === 0 || currentStyle === 'Bus') return;
+    var m = effectiveMult(currentStyle, currentMult);
+    var caller = currentMembers()[activeMember];
+    var label = caller.name + ' · ' + selectedColors.join(', ') + (currentStyle!=='Beetle' ? ' · '+currentStyle : '');
+    if(rules.interior && selectedInterior.length){ label += ' · ' + selectedInterior.join(', '); }
+
+    var list = $('#call-list');
+    if(tripCalls === 0){ list.innerHTML = ''; }
+    tripCalls++;
+    var row = document.createElement('div');
+    row.className = 'call-row';
+    var thumbHtml = photoDataUrl ? '<img class="thumb" src="'+photoDataUrl+'" alt="">' : '';
+    row.innerHTML = '<p style="display:flex;align-items:center;">'+thumbHtml+label+'</p><span class="pts">+'+m+'</span>';
+    list.insertBefore(row, list.firstChild);
+
+    caller.pts += m;
+    if(caller.you){
+      youLifetime += m;
+      selectedColors.forEach(function(c){ myBugDex[c + '|' + currentStyle] = true; });
+      $('#bugdex-count-inline').textContent = Object.keys(myBugDex).length;
+      if(photoDataUrl){ youGlobal.weekly += m; youGlobal.annual += m; }
+    }
+    renderRoster();
+    renderSpotters();
+    var newScore = (activeTeam === 'reineke' ? reinekeScore : ouelletteScore) + m;
+    animateScore(activeTeam, newScore);
+    prependMoment(activeTeam, caller.name, currentStyle, label, m);
+    sheet.classList.remove('open');
+
+    if(currentStyle === 'Thing' || currentStyle === 'Convertible'){
+      setTimeout(function(){ showNotif(currentStyle, activeTeam, caller.name, photoDataUrl); }, 350);
+    }
+  });
+})();
+</script>
+</body>
+</html>
