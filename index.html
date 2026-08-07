@@ -219,6 +219,13 @@
   .moment p{ margin:0; font-size:13px; line-height:1.4; }
   .moment .pts{ font-family:var(--font-mono); font-weight:700; }
   .moment .when{ font-size:10.5px; color:var(--ink-faint); margin-top:2px; }
+  .dispute-btn{
+    flex:0 0 auto; background:none; border:none; color:var(--ink-faint); font-size:13px; cursor:pointer;
+    padding:2px 2px 2px 6px; align-self:flex-start; opacity:.6;
+  }
+  .dispute-btn:hover, .dispute-btn:focus-visible{ color:var(--rust); opacity:1; }
+  .dispute-btn.disputed{ color:var(--rust); opacity:1; cursor:default; }
+  .disputed-tag{ font-family:var(--font-mono); font-size:9.5px; color:var(--rust); font-weight:700; letter-spacing:.03em; margin-top:3px; display:block; }
 
   /* trip */
   .big-start{
@@ -450,6 +457,20 @@
   .target-stepper{ display:flex; align-items:center; gap:8px; flex:0 0 auto; }
   .target-num{ font-family:var(--font-mono); font-weight:700; font-size:15px; min-width:20px; text-align:center; font-variant-numeric:tabular-nums; }
 
+  /* streak */
+  .streak-chip{
+    display:flex; align-items:center; justify-content:center; gap:5px; font-size:11.5px; font-weight:600;
+    background:var(--rust-tint); color:var(--rust); padding:9px 12px; border-radius:12px; margin-bottom:12px;
+    text-align:center; line-height:1.4;
+  }
+  .streak-chip b{ font-family:var(--font-mono); }
+  .streak-chip.done{ background:var(--green-tint); color:var(--green); }
+
+  .stat-row{ display:flex; background:var(--surface-2); border-radius:14px; padding:14px 8px; margin-bottom:14px; }
+  .stat-row .stat{ flex:1; text-align:center; }
+  .stat-row .stat b{ display:block; font-family:var(--font-mono); font-size:16px; font-weight:700; }
+  .stat-row .stat span{ display:block; font-size:9px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.04em; margin-top:3px; }
+
   /* bug-dex */
   .dex-row{ display:flex; align-items:center; justify-content:space-between; padding:7px 2px; border-bottom:1px solid var(--border); gap:10px; }
   .dex-row:last-child{ border-bottom:none; }
@@ -505,6 +526,28 @@
   .quicknav{ display:flex; gap:8px; }
   .qn{ width:7px; height:7px; border-radius:50%; background:var(--ink-faint); opacity:.35; border:none; cursor:pointer; padding:0; }
   .qn.active{ opacity:1; background:var(--reineke); }
+
+  /* onboarding */
+  .onboarding-overlay{
+    position:absolute; inset:0; z-index:60; background:var(--bg); border-radius:32px; overflow:hidden;
+    display:flex; flex-direction:column;
+  }
+  .onboarding-overlay.done{ display:none; }
+  .tabbar-inner.hidden{ display:none; }
+  .ob-timer{
+    position:absolute; top:12px; right:14px; font-family:var(--font-mono); font-size:10.5px; font-weight:700;
+    color:var(--ink-faint); background:var(--surface); border:1px solid var(--border); padding:4px 9px;
+    border-radius:999px; z-index:2; display:none; font-variant-numeric:tabular-nums;
+  }
+  .ob-timer.locked{ color:var(--green); border-color:var(--green); background:var(--green-tint); }
+  .ob-step{ display:none; flex-direction:column; flex:1; padding:50px 22px 22px; overflow-y:auto; }
+  .ob-step.active{ display:flex; }
+  .ob-center{ flex:1; display:flex; flex-direction:column; justify-content:center; text-align:center; align-items:center; }
+  .ob-h{ font-family:var(--font-display); font-weight:800; font-size:21px; letter-spacing:-.01em; margin:0 0 8px; text-wrap:balance; }
+  .ob-sub{ font-size:12.5px; color:var(--ink-soft); line-height:1.55; margin:0; max-width:250px; }
+  .ob-field-label{ font-size:11px; font-weight:700; color:var(--ink-faint); margin:14px 0 6px; text-transform:uppercase; letter-spacing:.05em; }
+  .ob-field-label:first-child{ margin-top:0; }
+  .ob-otp{ text-align:center; font-family:var(--font-mono); font-size:24px; letter-spacing:.5em; padding-left:16px; }
 </style>
 </head>
 <body>
@@ -535,9 +578,21 @@
 
           <!-- SCORE -->
           <section id="panel-score" class="panel active">
-            <h2 class="screen-title">Rivalry</h2>
-            <p class="screen-sub">Shared ruleset · started this spring</p>
+            <h2 class="screen-title" id="score-title">Rivalry</h2>
+            <p class="screen-sub" id="score-sub">Shared ruleset · started this spring</p>
 
+            <div id="score-solo-block" style="display:none;">
+              <div class="card" style="text-align:center;padding:24px 16px;">
+                <div style="display:flex;justify-content:center;margin-bottom:10px;" id="solo-bug"></div>
+                <p style="font-size:12px;color:var(--ink-soft);margin:0 0 2px;">Playing solo</p>
+                <div style="font-family:var(--font-mono);font-size:30px;font-weight:700;" id="solo-lifetime-pts">47</div>
+                <p style="font-size:10.5px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.05em;margin:2px 0 18px;">lifetime points</p>
+                <button class="big-start" id="score-start-rivalry" style="font-size:14px;padding:14px;">+ Start a Rivalry</button>
+              </div>
+              <p class="team-toggle-note" style="text-align:center;margin:8px 0 0;">Invite a family to compete against — your collection carries right over.</p>
+            </div>
+
+            <div id="score-rivalry-block">
             <div class="score-row">
               <div class="team reineke"><div class="name">Reineke</div><div class="num" id="score-reineke">14</div></div>
               <div class="vs">VS</div>
@@ -567,15 +622,16 @@
               </div>
             </div>
 
+            <div class="section-label">Big moments</div>
+            <div class="moment" data-call="Team Ouellette spotted a Thing — Saturn Yellow, black convertible top (+10)"><span class="moment-icon"><svg viewBox="0 0 100 42" width="22" height="9" aria-hidden="true"><path d="M2,33 C2,21 10,11 25,10 C32,9 34,5 45,5 C58,5 62,10 70,11 C85,12 98,19 98,31 C98,34 95,35 90,35 L10,35 C5,35 2,35 2,33 Z" fill="#E0C21C"/><circle cx="23" cy="34" r="6" fill="rgba(0,0,0,.38)"/><circle cx="78" cy="34" r="6" fill="rgba(0,0,0,.38)"/></svg></span><p>Team Ouellette spotted a <b>Thing</b> — Saturn Yellow, black convertible top. <span class="pts" style="color:var(--rust)">+10</span><span class="when">Back road, PA · yesterday</span></p><button class="dispute-btn" title="Dispute this call">⚑</button></div>
+            <div class="moment" data-call="Team Reineke called Convertible, Kasan Red with tan top (+2)"><span class="moment-icon"><svg viewBox="0 0 100 42" width="22" height="9" aria-hidden="true"><path d="M2,33 C2,21 10,11 25,10 C32,9 34,5 45,5 C58,5 62,10 70,11 C85,12 98,19 98,31 C98,34 95,35 90,35 L10,35 C5,35 2,35 2,33 Z" fill="#A32C2E"/><circle cx="23" cy="34" r="6" fill="rgba(0,0,0,.38)"/><circle cx="78" cy="34" r="6" fill="rgba(0,0,0,.38)"/></svg></span><p>Team Reineke called <b>Convertible</b>, Kasan Red with tan top. <span class="pts" style="color:var(--green)">+2</span><span class="when">Wendy's parking lot · 2 days ago</span></p><button class="dispute-btn" title="Dispute this call">⚑</button></div>
+            <div class="moment" data-call="Same bug, no hit — ceasefire honored on the CVS-lot Marina Blue Beetle"><span class="moment-icon"><svg viewBox="0 0 100 42" width="22" height="9" aria-hidden="true"><path d="M2,33 C2,21 10,11 25,10 C32,9 34,5 45,5 C58,5 62,10 70,11 C85,12 98,19 98,31 C98,34 95,35 90,35 L10,35 C5,35 2,35 2,33 Z" fill="#6FA3B5"/><circle cx="23" cy="34" r="6" fill="rgba(0,0,0,.38)"/><circle cx="78" cy="34" r="6" fill="rgba(0,0,0,.38)"/></svg></span><p>Same bug, no hit — ceasefire honored on the CVS-lot Marina Blue Beetle.<span class="when">3 days ago</span></p><button class="dispute-btn" title="Dispute this call">⚑</button></div>
+            <div class="moment" data-call="Team Ouellette: New Beetle, Sumatra Green (+1)"><span class="moment-icon"><svg viewBox="0 0 100 42" width="22" height="9" aria-hidden="true"><path d="M2,33 C2,21 10,11 25,10 C32,9 34,5 45,5 C58,5 62,10 70,11 C85,12 98,19 98,31 C98,34 95,35 90,35 L10,35 C5,35 2,35 2,33 Z" fill="#205C3F"/><circle cx="23" cy="34" r="6" fill="rgba(0,0,0,.38)"/><circle cx="78" cy="34" r="6" fill="rgba(0,0,0,.38)"/></svg></span><p>Team Ouellette: New Beetle, Sumatra Green. <span class="pts" style="color:var(--green)">+1</span><span class="when">4 days ago</span></p><button class="dispute-btn" title="Dispute this call">⚑</button></div>
+            </div>
+
             <div class="section-label">Your Collection <span style="text-transform:none;font-weight:500;color:var(--ink-faint);">— yours no matter who you're playing against</span></div>
             <button class="add-member-btn" id="open-bugdex">🪲 My Bug-Dex — <span id="bugdex-count-inline">5</span>/56 found</button>
             <button class="add-member-btn" id="open-leaderboard">🌍 See the Global Leaderboard</button>
-
-            <div class="section-label">Big moments</div>
-            <div class="moment"><span class="moment-icon"><svg viewBox="0 0 100 42" width="22" height="9" aria-hidden="true"><path d="M2,33 C2,21 10,11 25,10 C32,9 34,5 45,5 C58,5 62,10 70,11 C85,12 98,19 98,31 C98,34 95,35 90,35 L10,35 C5,35 2,35 2,33 Z" fill="#E0C21C"/><circle cx="23" cy="34" r="6" fill="rgba(0,0,0,.38)"/><circle cx="78" cy="34" r="6" fill="rgba(0,0,0,.38)"/></svg></span><p>Team Ouellette spotted a <b>Thing</b> — Saturn Yellow, black convertible top. <span class="pts" style="color:var(--rust)">+10</span><span class="when">Back road, PA · yesterday</span></p></div>
-            <div class="moment"><span class="moment-icon"><svg viewBox="0 0 100 42" width="22" height="9" aria-hidden="true"><path d="M2,33 C2,21 10,11 25,10 C32,9 34,5 45,5 C58,5 62,10 70,11 C85,12 98,19 98,31 C98,34 95,35 90,35 L10,35 C5,35 2,35 2,33 Z" fill="#A32C2E"/><circle cx="23" cy="34" r="6" fill="rgba(0,0,0,.38)"/><circle cx="78" cy="34" r="6" fill="rgba(0,0,0,.38)"/></svg></span><p>Team Reineke called <b>Convertible</b>, Kasan Red with tan top. <span class="pts" style="color:var(--green)">+2</span><span class="when">Wendy's parking lot · 2 days ago</span></p></div>
-            <div class="moment"><span class="moment-icon"><svg viewBox="0 0 100 42" width="22" height="9" aria-hidden="true"><path d="M2,33 C2,21 10,11 25,10 C32,9 34,5 45,5 C58,5 62,10 70,11 C85,12 98,19 98,31 C98,34 95,35 90,35 L10,35 C5,35 2,35 2,33 Z" fill="#6FA3B5"/><circle cx="23" cy="34" r="6" fill="rgba(0,0,0,.38)"/><circle cx="78" cy="34" r="6" fill="rgba(0,0,0,.38)"/></svg></span><p>Same bug, no hit — ceasefire honored on the CVS-lot Marina Blue Beetle.<span class="when">3 days ago</span></p></div>
-            <div class="moment"><span class="moment-icon"><svg viewBox="0 0 100 42" width="22" height="9" aria-hidden="true"><path d="M2,33 C2,21 10,11 25,10 C32,9 34,5 45,5 C58,5 62,10 70,11 C85,12 98,19 98,31 C98,34 95,35 90,35 L10,35 C5,35 2,35 2,33 Z" fill="#205C3F"/><circle cx="23" cy="34" r="6" fill="rgba(0,0,0,.38)"/><circle cx="78" cy="34" r="6" fill="rgba(0,0,0,.38)"/></svg></span><p>Team Ouellette: New Beetle, Sumatra Green. <span class="pts" style="color:var(--green)">+1</span><span class="when">4 days ago</span></p></div>
           </section>
 
           <!-- TRIP -->
@@ -583,11 +639,13 @@
             <h2 class="screen-title">Trip</h2>
             <p class="screen-sub" id="trip-sub">Between two points, until the engine's off long enough for the fan to stop.</p>
 
+            <div class="streak-chip" id="streak-chip"></div>
+
             <div class="team-toggle" id="team-toggle">
               <button class="tt-reineke" data-team="reineke" aria-pressed="true">Team Reineke</button>
               <button class="tt-ouellette" data-team="ouellette" aria-pressed="false">Team Ouellette</button>
             </div>
-            <p class="team-toggle-note">Demo: swap teams to see how the other family's phone plays.</p>
+            <p class="team-toggle-note" id="team-toggle-note">Demo: swap teams to see how the other family's phone plays.</p>
 
             <div id="trip-idle">
               <button class="big-start" id="start-trip">Start Trip</button>
@@ -704,6 +762,9 @@
               <div class="trip-name" style="margin-bottom:4px;">Currently competing</div>
               <div class="trip-meta">Team Reineke &amp; Team Ouellette · ruleset locked in Mar 2026</div>
             </div>
+
+            <div class="section-label">Demo</div>
+            <button class="add-member-btn" id="replay-onboarding">🔄 Replay onboarding — nothing to playing, timed</button>
           </section>
 
         </div>
@@ -768,7 +829,12 @@
             <button class="close-sheet" id="close-sheet-bugdex">Close</button>
             <div class="grabber"></div>
             <h3>🪲 My Bug-Dex</h3>
-            <p class="sub" id="bugdex-sub">Every color and body style you've personally called — 5 of 56 found.</p>
+            <p class="sub">Every color and body style you've personally called.</p>
+            <div class="stat-row">
+              <div class="stat"><b id="stat-lifetime">47</b><span>Lifetime pts</span></div>
+              <div class="stat"><b id="stat-streak">🔥4</b><span>Day streak</span></div>
+              <div class="stat"><b id="stat-dex">5/56</b><span>Found</span></div>
+            </div>
             <p class="photo-req-note" style="margin-top:-8px;">This one's just for you — no photo needed, it's not a competition.</p>
             <div id="bugdex-grid"></div>
             <button class="log-submit" id="bugdex-to-leaderboard" style="margin-top:14px;">See Global Leaderboard →</button>
@@ -802,6 +868,26 @@
               <button class="copy-btn" id="copy-rivalry-code">Copy</button>
             </div>
             <button class="log-submit" id="close-invite-team-done">Done</button>
+          </div>
+        </div>
+
+        <!-- DISPUTE A CALL SHEET -->
+        <div class="sheet" id="sheet-dispute">
+          <div class="sheet-panel">
+            <button class="close-sheet" id="close-sheet-dispute">Cancel</button>
+            <div class="grabber"></div>
+            <h3>Dispute this call</h3>
+            <p class="sub" id="dispute-call-summary">"Team Ouellette spotted a Thing..."</p>
+
+            <div class="section-label" style="margin-top:2px;">Reason</div>
+            <div class="chips" id="dispute-reasons">
+              <button class="chip" aria-pressed="false" data-reason="Wrong color">Wrong color</button>
+              <button class="chip" aria-pressed="false" data-reason="Not actually a Bug">Not actually a Bug</button>
+              <button class="chip" aria-pressed="false" data-reason="Same bug, already hit">Same bug, already hit</button>
+              <button class="chip" aria-pressed="false" data-reason="Other">Other</button>
+            </div>
+            <input class="text-input" id="dispute-note" type="text" placeholder="Optional note">
+            <button class="log-submit" id="submit-dispute">Send to Both Families</button>
           </div>
         </div>
 
@@ -847,6 +933,60 @@
             <b id="notif-title">Team Reineke spotted a Thing!</b>
             <p id="notif-body">+10 points — they're now in the lead.</p>
             <p class="cap" id="notif-cap">What Team Ouellette would see, right now</p>
+          </div>
+        </div>
+
+        <!-- ONBOARDING -->
+        <div class="onboarding-overlay" id="onboarding">
+          <div class="ob-timer" id="ob-timer">⏱ <span id="ob-timer-val">0:00.0</span></div>
+
+          <div class="ob-step active" id="ob-step-welcome">
+            <div class="ob-center">
+              <div class="logo-row" style="margin-bottom:16px;">
+                <svg class="hero-bug" viewBox="0 0 100 42" width="28" height="12" aria-hidden="true"><path d="M2,33 C2,21 10,11 25,10 C32,9 34,5 45,5 C58,5 62,10 70,11 C85,12 98,19 98,31 C98,34 95,35 90,35 L10,35 C5,35 2,35 2,33 Z" fill="var(--reineke)" transform="scale(-1,1) translate(-100,0)"/><circle cx="77" cy="34" r="6" fill="rgba(0,0,0,.38)"/><circle cx="22" cy="34" r="6" fill="rgba(0,0,0,.38)"/></svg>
+                <h1 class="logo" style="font-size:30px;">PUNCH<br><em>BUGGY</em></h1>
+                <svg class="hero-bug" viewBox="0 0 100 42" width="28" height="12" aria-hidden="true"><path d="M2,33 C2,21 10,11 25,10 C32,9 34,5 45,5 C58,5 62,10 70,11 C85,12 98,19 98,31 C98,34 95,35 90,35 L10,35 C5,35 2,35 2,33 Z" fill="var(--ouellette)"/><circle cx="23" cy="34" r="6" fill="rgba(0,0,0,.38)"/><circle cx="78" cy="34" r="6" fill="rgba(0,0,0,.38)"/></svg>
+              </div>
+              <p class="ob-sub">Spot Beetles, log the call, build your collection — or start a rivalry with another family. Either way, every sighting counts.</p>
+            </div>
+            <button class="big-start" id="ob-get-started">Get Started</button>
+          </div>
+
+          <div class="ob-step" id="ob-step-register">
+            <p class="ob-h">Who's playing?</p>
+            <p class="ob-sub" style="max-width:none;margin-bottom:6px;">Just enough to save your progress.</p>
+
+            <p class="ob-field-label">Your name</p>
+            <input class="text-input" id="ob-name" type="text" placeholder="e.g. Alex" maxlength="24" style="margin-bottom:0;">
+
+            <p class="ob-field-label">Reach you at</p>
+            <div class="seg" id="ob-contact-method" style="margin-bottom:10px;">
+              <button data-method="email" aria-pressed="true">Email</button>
+              <button data-method="phone" aria-pressed="false">Phone</button>
+            </div>
+            <input class="text-input" id="ob-contact" type="email" placeholder="you@example.com" style="margin-bottom:0;">
+
+            <button class="add-member-btn" id="ob-toggle-code" style="margin-top:12px;">Have an invite code?</button>
+            <input class="text-input" id="ob-code" type="text" placeholder="e.g. RIVAL-K92M" style="display:none;margin-top:10px;text-transform:uppercase;">
+
+            <div style="flex:1;"></div>
+            <button class="log-submit" id="ob-continue">Continue</button>
+          </div>
+
+          <div class="ob-step" id="ob-step-verify">
+            <p class="ob-h">Check your <span id="ob-method-label">email</span></p>
+            <p class="ob-sub" id="ob-sent-to" style="max-width:none;margin-bottom:18px;">We sent a code to you@example.com</p>
+            <input class="text-input ob-otp" id="ob-otp" type="tel" inputmode="numeric" maxlength="6" placeholder="······" autocomplete="one-time-code">
+            <p class="photo-req-note" id="ob-otp-note" style="text-align:center;">Demo: type any 6 digits — it auto-continues</p>
+          </div>
+
+          <div class="ob-step" id="ob-step-done">
+            <div class="ob-center">
+              <div id="ob-check" style="font-size:38px;margin-bottom:8px;">✅</div>
+              <h2 class="ob-h" id="ob-welcome-msg">You're in.</h2>
+              <p class="ob-sub" id="ob-time-result">Registered and playing.</p>
+            </div>
+            <button class="big-start" id="ob-start-playing">Start Your First Trip →</button>
           </div>
         </div>
       </div>
@@ -926,6 +1066,34 @@
   var youGlobal = { weekly:4, annual:184 };
   var lbPeriod = 'weekly';
   var youLifetime = 47;
+  var currentStreak = 4;
+  var longestStreak = 9;
+  var streakExtendedToday = false;
+  var hasRivalry = true;
+
+  function renderStreak(){
+    var chip = $('#streak-chip');
+    if(streakExtendedToday){
+      chip.innerHTML = '🔥 <b>'+currentStreak+'</b>-day streak — nice, you kept it going today.';
+      chip.classList.add('done');
+    } else {
+      chip.innerHTML = '🔥 <b>'+currentStreak+'</b>-day streak — log a Bug today to keep it going.';
+      chip.classList.remove('done');
+    }
+  }
+
+  function renderAppMode(){
+    $('#score-solo-block').style.display = hasRivalry ? 'none' : 'block';
+    $('#score-rivalry-block').style.display = hasRivalry ? 'block' : 'none';
+    $('#score-title').textContent = hasRivalry ? 'Rivalry' : 'My Collection';
+    $('#score-sub').textContent = hasRivalry ? 'Shared ruleset · started this spring' : "Just you for now — invite a family whenever you're ready.";
+    $('#team-toggle').style.display = hasRivalry ? 'flex' : 'none';
+    $('#team-toggle-note').style.display = hasRivalry ? 'block' : 'none';
+    if(!hasRivalry){
+      $('#solo-lifetime-pts').textContent = youLifetime;
+      $('#solo-bug').innerHTML = beetleIcon('var(--rust)', 40);
+    }
+  }
   var BODY_STYLES_COLLECTIBLE = ['Beetle','Convertible','New Beetle','Thing'];
   var myBugDex = {};
   ['Texas Yellow|Beetle','Kasan Red|Convertible','Marina Blue|Beetle','Biscay Blue|New Beetle','Bahia Red|Thing'].forEach(function(k){ myBugDex[k] = true; });
@@ -1003,9 +1171,11 @@
     var teamColor = teamKey === 'reineke' ? 'var(--reineke)' : 'var(--ouellette)';
     var teamLabel = teamData[teamKey].label;
     var verb = style === 'Thing' ? ' spotted a <b>Thing</b> — ' : (style === 'Convertible' ? ' called a <b>Convertible</b>, ' : ': ');
+    var plainText = teamLabel + verb.replace(/<\/?b>/g, '') + label.replace(callerName + ' · ', '') + ' (+' + pts + ')';
     var el = document.createElement('div');
     el.className = 'moment';
-    el.innerHTML = '<span class="moment-icon">'+beetleIcon(teamColor,22)+'</span><p>'+teamLabel+verb+label.replace(callerName+' · ','')+' <span class="pts" style="color:var(--green)">+'+pts+'</span><span class="when">Just now</span></p>';
+    el.dataset.call = plainText;
+    el.innerHTML = '<span class="moment-icon">'+beetleIcon(teamColor,22)+'</span><p>'+teamLabel+verb+label.replace(callerName+' · ','')+' <span class="pts" style="color:var(--green)">+'+pts+'</span><span class="when">Just now</span></p><button class="dispute-btn" title="Dispute this call">⚑</button>';
     var firstMoment = container.querySelector('.moment');
     if(firstMoment){ container.insertBefore(el, firstMoment); } else { container.appendChild(el); }
   }
@@ -1059,8 +1229,15 @@
     closeAllSheets();
     $('#sheet-invite-team').classList.add('open');
   });
+  $('#score-start-rivalry').addEventListener('click', function(){
+    closeAllSheets();
+    $('#sheet-invite-team').classList.add('open');
+  });
   $('#close-sheet-invite-team').addEventListener('click', function(){ $('#sheet-invite-team').classList.remove('open'); });
-  $('#close-invite-team-done').addEventListener('click', function(){ $('#sheet-invite-team').classList.remove('open'); });
+  $('#close-invite-team-done').addEventListener('click', function(){
+    $('#sheet-invite-team').classList.remove('open');
+    if(!hasRivalry){ hasRivalry = true; renderAppMode(); }
+  });
   $('#sheet-invite-team').addEventListener('click', function(e){ if(e.target === $('#sheet-invite-team')) $('#sheet-invite-team').classList.remove('open'); });
   $('#copy-rivalry-code').addEventListener('click', function(){
     try{ navigator.clipboard.writeText('RIVAL-K92M'); }catch(e){}
@@ -1085,7 +1262,9 @@
   function renderBugDex(){
     var found = Object.keys(myBugDex).length;
     var total = Object.keys(OFFICIAL_COLORS).length * BODY_STYLES_COLLECTIBLE.length;
-    $('#bugdex-sub').textContent = youLifetime + ' lifetime points · ' + found + ' of ' + total + ' colors and styles found.';
+    $('#stat-lifetime').textContent = youLifetime;
+    $('#stat-streak').textContent = '🔥' + currentStreak;
+    $('#stat-dex').textContent = found + '/' + total;
     $('#bugdex-count-inline').textContent = found;
     $('#bugdex-grid').innerHTML = Object.keys(OFFICIAL_COLORS).map(function(color){
       var hex = OFFICIAL_COLORS[color];
@@ -1241,6 +1420,8 @@
   renderSwitcher();
   renderRoundTracks();
   renderPastRounds();
+  renderStreak();
+  renderAppMode();
 
   // ---- rulings ----
   var rulingId = 2;
@@ -1320,6 +1501,51 @@
   });
 
   renderRulings();
+
+  // ---- dispute a specific call ----
+  var disputeReason = null;
+  var disputeTargetMoment = null;
+
+  $('#panel-score').addEventListener('click', function(e){
+    var btn = e.target.closest('.dispute-btn');
+    if(!btn || btn.classList.contains('disputed')) return;
+    disputeTargetMoment = btn.closest('.moment');
+    disputeReason = null;
+    $all('.chip', $('#dispute-reasons')).forEach(function(c){ c.setAttribute('aria-pressed', 'false'); });
+    $('#dispute-note').value = '';
+    $('#dispute-call-summary').textContent = '"' + disputeTargetMoment.dataset.call + '"';
+    closeAllSheets();
+    $('#sheet-dispute').classList.add('open');
+  });
+  $('#close-sheet-dispute').addEventListener('click', function(){ $('#sheet-dispute').classList.remove('open'); });
+  $('#sheet-dispute').addEventListener('click', function(e){ if(e.target === $('#sheet-dispute')) $('#sheet-dispute').classList.remove('open'); });
+  $all('.chip', $('#dispute-reasons')).forEach(function(chip){
+    chip.addEventListener('click', function(){
+      $all('.chip', $('#dispute-reasons')).forEach(function(c){ c.setAttribute('aria-pressed', 'false'); });
+      chip.setAttribute('aria-pressed', 'true');
+      disputeReason = chip.dataset.reason;
+    });
+  });
+  $('#submit-dispute').addEventListener('click', function(){
+    if(!disputeReason || !disputeTargetMoment) return;
+    var note = $('#dispute-note').value.trim();
+    var q = 'Disputed: "' + disputeTargetMoment.dataset.call + '" — ' + disputeReason + (note ? ' (' + note + ')' : '') + '. Should it stand?';
+    rulingId++;
+    openRulings.push({ id: rulingId, q: q, reineke: null, ouellette: null });
+    renderRulings();
+
+    var flagBtn = disputeTargetMoment.querySelector('.dispute-btn');
+    flagBtn.classList.add('disputed');
+    flagBtn.textContent = '🚩';
+    flagBtn.title = 'Disputed — sent to Rules > Open Rulings';
+    if(!disputeTargetMoment.querySelector('.disputed-tag')){
+      var tag = document.createElement('span');
+      tag.className = 'disputed-tag';
+      tag.textContent = '🚩 Disputed — under review';
+      disputeTargetMoment.querySelector('p').appendChild(tag);
+    }
+    $('#sheet-dispute').classList.remove('open');
+  });
 
   // tabs
   $all('.tab').forEach(function(btn){
@@ -1509,6 +1735,12 @@
       });
       $('#bugdex-count-inline').textContent = Object.keys(myBugDex).length;
       if(photoDataUrl){ youGlobal.weekly += m; youGlobal.annual += m; }
+      if(!streakExtendedToday){
+        streakExtendedToday = true;
+        currentStreak++;
+        if(currentStreak > longestStreak){ longestStreak = currentStreak; }
+        renderStreak();
+      }
     }
     renderRoster();
     renderSpotters();
@@ -1525,6 +1757,143 @@
     if(currentStyle === 'Thing' || currentStyle === 'Convertible'){
       setTimeout(function(){ showNotif(currentStyle, activeTeam, caller.name, photoDataUrl); }, notifDelay);
     }
+  });
+
+  // ---- onboarding: nothing -> registered -> playing, timed ----
+  var obStart = null, obTimerInt = null, obContactMethod = 'email';
+
+  $('.tabbar-inner').classList.add('hidden');
+
+  function obShowStep(id){
+    $all('.ob-step').forEach(function(s){ s.classList.remove('active'); });
+    $('#'+id).classList.add('active');
+  }
+  function obFormatTime(ms){
+    var s = ms / 1000;
+    var m = Math.floor(s / 60);
+    var rem = s - m * 60;
+    return m + ':' + (rem < 10 ? '0' : '') + rem.toFixed(1);
+  }
+
+  $('#ob-get-started').addEventListener('click', function(){
+    obStart = Date.now();
+    $('#ob-timer').style.display = 'block';
+    clearInterval(obTimerInt);
+    obTimerInt = setInterval(function(){
+      $('#ob-timer-val').textContent = obFormatTime(Date.now() - obStart);
+    }, 100);
+    obShowStep('ob-step-register');
+    $('#ob-name').focus();
+  });
+
+  $all('#ob-contact-method button').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      obContactMethod = btn.dataset.method;
+      $all('#ob-contact-method button').forEach(function(b){ b.setAttribute('aria-pressed', b === btn ? 'true' : 'false'); });
+      $('#ob-contact').type = obContactMethod === 'email' ? 'email' : 'tel';
+      $('#ob-contact').placeholder = obContactMethod === 'email' ? 'you@example.com' : '(555) 123-4567';
+      $('#ob-contact').value = '';
+    });
+  });
+
+  $('#ob-toggle-code').addEventListener('click', function(){
+    var f = $('#ob-code');
+    f.style.display = (f.style.display === 'none') ? 'block' : 'none';
+  });
+
+  $('#ob-continue').addEventListener('click', function(){
+    var name = $('#ob-name').value.trim();
+    var contact = $('#ob-contact').value.trim();
+    if(!name || !contact) return;
+    $('#ob-method-label').textContent = obContactMethod;
+    $('#ob-sent-to').textContent = 'We sent a code to ' + contact;
+    obShowStep('ob-step-verify');
+    $('#ob-otp').value = '';
+    $('#ob-otp').focus();
+  });
+
+  $('#ob-otp').addEventListener('input', function(){
+    var v = $('#ob-otp').value.replace(/\D/g, '');
+    $('#ob-otp').value = v;
+    if(v.length === 6){ setTimeout(obComplete, 250); }
+  });
+
+  function obApplyIdentity(name, code){
+    var joinedLabel = null;
+    if(code){
+      var upper = code.toUpperCase();
+      teamData.reineke.members.forEach(function(m){ m.you = false; });
+      teamData.ouellette.members.forEach(function(m){ m.you = false; });
+      if(upper.indexOf('RIVAL') === 0){
+        teamData.ouellette.members[0].name = name;
+        teamData.ouellette.members[0].you = true;
+        activeTeam = 'ouellette';
+        hasRivalry = true;
+        joinedLabel = 'Team Ouellette, rivaling Team Reineke';
+      } else {
+        teamData.reineke.members.push({ name:name, pts:0, you:true });
+        activeTeam = 'reineke';
+        hasRivalry = true;
+        joinedLabel = 'Team Reineke';
+      }
+    } else {
+      teamData.reineke.members[0].name = name;
+      activeTeam = 'reineke';
+      hasRivalry = false;
+    }
+    activeMember = teamData[activeTeam].members.findIndex(function(m){ return m.you; });
+    if(activeMember < 0){ activeMember = 0; }
+
+    $all('#team-toggle button').forEach(function(b){ b.setAttribute('aria-pressed', b.dataset.team === activeTeam ? 'true' : 'false'); });
+
+    renderRoster(); renderSpotters(); renderSwitcher(); renderAppMode();
+    return joinedLabel;
+  }
+
+  function obComplete(){
+    clearInterval(obTimerInt);
+    var elapsed = Date.now() - obStart;
+    var elapsedStr = obFormatTime(elapsed);
+    $('#ob-timer-val').textContent = elapsedStr;
+    $('#ob-timer').classList.add('locked');
+
+    var name = $('#ob-name').value.trim() || 'Player';
+    var firstName = name.split(' ')[0];
+    var code = $('#ob-code').value.trim();
+    var joinedLabel = obApplyIdentity(name, code);
+
+    $('#ob-welcome-msg').textContent = "You're in, " + firstName + '.';
+    $('#ob-time-result').textContent = 'Registered and playing in ' + elapsedStr + (joinedLabel ? ' · playing for ' + joinedLabel : ' · playing solo');
+    obShowStep('ob-step-done');
+  }
+
+  $('#ob-start-playing').addEventListener('click', function(){
+    $('#onboarding').classList.add('done');
+    $('.tabbar-inner').classList.remove('hidden');
+    $all('.tab').forEach(function(t){ t.classList.remove('active'); });
+    $('.tab[data-panel="trip"]').classList.add('active');
+    $all('.panel').forEach(function(p){ p.classList.remove('active'); });
+    $('#panel-trip').classList.add('active');
+    if(!tripActive){ $('#start-trip').click(); }
+  });
+
+  $('#replay-onboarding').addEventListener('click', function(){
+    clearInterval(obTimerInt);
+    $('#ob-timer').style.display = 'none';
+    $('#ob-timer').classList.remove('locked');
+    $('#ob-name').value = ''; $('#ob-contact').value = ''; $('#ob-code').value = ''; $('#ob-otp').value = '';
+    $('#ob-code').style.display = 'none';
+    $('.tabbar-inner').classList.add('hidden');
+
+    hasRivalry = true;
+    teamData.reineke.members = [{ name:'Nicole', pts:6, you:true }, { name:'Sam', pts:4, you:false }, { name:'Jamie', pts:3, you:false }, { name:'Theo', pts:1, you:false }];
+    teamData.ouellette.members = [{ name:'Daniel', pts:4, you:false }, { name:'Roger', pts:3, you:false }, { name:'Roseanne', pts:2, you:false }];
+    activeTeam = 'reineke';
+    activeMember = 0;
+    renderRoster(); renderSpotters(); renderSwitcher(); renderAppMode();
+
+    obShowStep('ob-step-welcome');
+    $('#onboarding').classList.remove('done');
   });
 })();
 </script>
