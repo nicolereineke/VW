@@ -78,6 +78,10 @@ test('onboarding: nothing to playing, under 60 seconds, with zero console errors
   await page.getByTestId('ob-otp').fill(code);
   await page.waitForSelector('[data-testid="ob-start-playing"]', { state: 'visible' });
   await page.getByTestId('ob-start-playing').click();
+  // Landing takes you to the Score tab (the app shell's default); "playing" is
+  // reached the moment the Trip tab's log button is one tap away.
+  await page.waitForSelector('[data-testid="tab-trip"]', { state: 'visible' });
+  await page.getByTestId('tab-trip').click();
   await page.waitForSelector('[data-testid="open-log"]', { state: 'visible' });
 
   const elapsed = Date.now() - start;
@@ -112,6 +116,7 @@ test('core loop: logging a call updates points and the streak in the real UI', a
   await page.getByTestId('ob-otp').fill(code);
   await page.waitForSelector('[data-testid="ob-start-playing"]');
   await page.getByTestId('ob-start-playing').click();
+  await page.getByTestId('tab-trip').click();
 
   await page.getByTestId('open-log').click();
   await page.locator('[data-testid="color-chips"] .chip', { hasText: 'Olympic Blue' }).click();
@@ -137,10 +142,89 @@ test('a solo player (no invite code entered) sees no rivalry scoreboard, per SPE
   await page.waitForSelector('[data-testid="ob-start-playing"]');
   await page.getByTestId('ob-start-playing').click();
 
-  // This user started solo (no invite code), so there's no rivalry round to win.
-  // Verify the honest alternative instead: no round score row renders at all.
+  // This user started solo (no invite code), so the Score tab should branch
+  // to the solo card, not a rivalry scoreboard.
+  await page.waitForSelector('[data-testid="score-solo"]', { state: 'visible' });
   const roundRow = await page.locator('[data-testid="score-row"]').count();
   assert.equal(roundRow, 0, 'a solo player sees no rivalry scoreboard, per SPEC.md §3.2');
+
+  await page.close();
+});
+
+async function onboardSolo(
+  page: import('playwright').Page,
+  name: string,
+  identifier: string,
+): Promise<void> {
+  await page.goto(`http://localhost:${PORT}/`);
+  await page.getByTestId('ob-get-started').click();
+  await page.getByTestId('ob-name').fill(name);
+  await page.getByTestId('ob-contact').fill(identifier);
+  await page.getByTestId('ob-continue').click();
+  const code = await readLastOtp(page, identifier);
+  await page.getByTestId('ob-otp').fill(code);
+  await page.waitForSelector('[data-testid="ob-start-playing"]');
+  await page.getByTestId('ob-start-playing').click();
+  await page.waitForSelector('[data-testid="score-solo"]');
+}
+
+test('all five tabs render their own screen without console errors', async () => {
+  const page = await browser.newPage();
+  const consoleErrors: string[] = [];
+  page.on('pageerror', (e) => consoleErrors.push(String(e)));
+  await onboardSolo(page, 'Casey', 'casey-tabs@example.com');
+
+  const tabs: Array<[string, string]> = [
+    ['tab-trip', 'open-log'],
+    ['tab-team', 'team-none'],
+    ['tab-history', 'history-screen'],
+    ['tab-rules', 'rules-none'],
+    ['tab-score', 'score-solo'],
+  ];
+  for (const [tab, expectedTestId] of tabs) {
+    await page.getByTestId(tab).click();
+    await page.waitForSelector(`[data-testid="${expectedTestId}"]`, { state: 'visible' });
+  }
+  assert.deepEqual(consoleErrors, []);
+  await page.close();
+});
+
+test('starting a rivalry from the solo Score tab switches to the rivalry scoreboard', async () => {
+  const page = await browser.newPage();
+  page.on('dialog', (dialog) => void dialog.accept('Team Reineke'));
+  await onboardSolo(page, 'Nicole', 'nicole-startrivalry@example.com');
+
+  await page.getByTestId('start-rivalry').click();
+  await page.waitForSelector('[data-testid="score-rivalry"]', { state: 'visible' });
+  const teamAName = await page.locator('#team-a-name').textContent();
+  assert.equal(teamAName, 'Team Reineke');
+  const teamBName = await page.locator('#team-b-name').textContent();
+  assert.match(teamBName ?? '', /waiting/i, 'no second team has joined yet');
+
+  await page.getByTestId('tab-team').click();
+  await page.waitForSelector('[data-testid="team-roster"]', { state: 'visible' });
+  const inviteCode = await page.getByTestId('team-invite-code').textContent();
+  assert.match(inviteCode ?? '', /^BUG-/);
+
+  await page.close();
+});
+
+test('the Rules screen round-target stepper actually persists through the backend', async () => {
+  const page = await browser.newPage();
+  page.on('dialog', (dialog) => void dialog.accept('Team Ouellette'));
+  await onboardSolo(page, 'Daniel', 'daniel-rules@example.com');
+  await page.getByTestId('start-rivalry').click();
+  await page.waitForSelector('[data-testid="score-rivalry"]');
+
+  await page.getByTestId('tab-rules').click();
+  await page.waitForSelector('[data-testid="rules-screen"]', { state: 'visible' });
+  const before = await page.locator('#target-val').textContent();
+  assert.equal(before, '21', 'the default round target is 21');
+
+  await page.locator('#target-plus').click();
+  await page.locator('#target-plus').click();
+  const after = await page.locator('#target-val').textContent();
+  assert.equal(after, '23');
 
   await page.close();
 });

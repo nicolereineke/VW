@@ -154,3 +154,68 @@ test('a ruling both teams agree on resolves; a split falls back to house rules, 
   const resolvedSplit = await backend.castVote(disputed.id, ouellette.id, 'no');
   assert.match(resolvedSplit.resolvedVerdict!, /no consensus/i);
 });
+
+test('getTeamMembers returns each membership joined with its user, ranked by points', async () => {
+  const backend = new LocalBackend();
+  const nicole = await registerUser(backend, 'nicole@example.com', 'Nicole');
+  const { team } = await backend.createRivalry(nicole.id, 'Team Reineke');
+  const trip = await backend.startTrip(nicole.id, team.id);
+  await backend.logCall({ tripId: trip.id, userId: nicole.id, colors: ['Kasan Red'], bodyStyle: 'Thing' });
+
+  const members = await backend.getTeamMembers(team.id);
+  assert.equal(members.length, 1);
+  assert.equal(members[0]!.user.displayName, 'Nicole');
+  assert.equal(members[0]!.points, 10);
+});
+
+test('getOtherTeam finds the opposing team once a rivalry is active, null while still pending', async () => {
+  const backend = new LocalBackend();
+  const nicole = await registerUser(backend, 'nicole@example.com', 'Nicole');
+  const { rivalry, team: reineke } = await backend.createRivalry(nicole.id, 'Team Reineke');
+  assert.equal(await backend.getOtherTeam(rivalry.id, reineke.id), null);
+
+  const daniel = await registerUser(backend, 'daniel@example.com', 'Daniel');
+  const { team: ouellette } = (await backend.redeemInviteCode(daniel.id, rivalry.inviteCode, 'Daniel'))!;
+  const other = await backend.getOtherTeam(rivalry.id, reineke.id);
+  assert.equal(other!.id, ouellette.id);
+});
+
+test('listPastRounds only includes rounds that have actually ended', async () => {
+  const backend = new LocalBackend();
+  const nicole = await registerUser(backend, 'nicole@example.com', 'Nicole');
+  const { rivalry, team: reineke } = await backend.createRivalry(nicole.id, 'Team Reineke');
+  await backend.redeemInviteCode(
+    (await registerUser(backend, 'daniel@example.com', 'Daniel')).id,
+    rivalry.inviteCode,
+    'Daniel',
+  );
+  assert.equal((await backend.listPastRounds(rivalry.id)).length, 0, 'the first round is still in progress');
+
+  const trip = await backend.startTrip(nicole.id, reineke.id);
+  for (let i = 0; i < 3; i++) {
+    await backend.logCall({ tripId: trip.id, userId: nicole.id, colors: ['Kasan Red'], bodyStyle: 'Thing' });
+  }
+  const past = await backend.listPastRounds(rivalry.id);
+  assert.equal(past.length, 1);
+  assert.equal(past[0]!.winnerTeamId, reineke.id);
+});
+
+test('updateRivalryRules changes future scoring without touching a round already in progress', async () => {
+  const backend = new LocalBackend();
+  const nicole = await registerUser(backend, 'nicole@example.com', 'Nicole');
+  const { rivalry, team } = await backend.createRivalry(nicole.id, 'Team Reineke');
+  const trip = await backend.startTrip(nicole.id, team.id);
+
+  await backend.logCall({ tripId: trip.id, userId: nicole.id, colors: ['Kasan Red'], bodyStyle: 'Convertible' });
+  await backend.updateRivalryRules(rivalry.id, { rulesConvertibleMultiplier: false });
+  const afterToggleOff = await backend.logCall({
+    tripId: trip.id,
+    userId: nicole.id,
+    colors: ['Marina Blue'],
+    bodyStyle: 'Convertible',
+  });
+  assert.equal(afterToggleOff.call.points, 1, 'the toggle takes effect on the very next call');
+
+  const round = await backend.getRound(afterToggleOff.call.roundId!);
+  assert.equal(round!.teamScores[team.id], 3, 'the earlier 2-point call already banked is untouched');
+});

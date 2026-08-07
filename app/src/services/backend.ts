@@ -7,10 +7,18 @@ import type {
   Rivalry,
   Round,
   Team,
+  TeamMembership,
   Trip,
   User,
   Vote,
 } from '../types.js';
+
+export interface RivalryRules {
+  roundTarget: number;
+  rulesConvertibleMultiplier: boolean;
+  rulesThingMultiplier: boolean;
+  rulesInteriorMode: boolean;
+}
 
 export interface LogCallInput {
   tripId: string;
@@ -57,10 +65,20 @@ export interface BackendService {
   // rulings
   proposeRuling(rivalryId: string, question: string, sourceCallId?: string): Promise<Ruling>;
   castVote(rulingId: string, teamId: string, vote: Vote): Promise<Ruling>;
+  updateRivalryRules(rivalryId: string, rules: Partial<RivalryRules>): Promise<Rivalry>;
 
   // reads
   getUser(userId: string): Promise<User | null>;
   getRound(roundId: string): Promise<Round | null>;
+  getCurrentRound(rivalryId: string): Promise<Round | null>;
+  getRivalry(rivalryId: string): Promise<Rivalry | null>;
+  getTeam(teamId: string): Promise<Team | null>;
+  getTeamMembers(teamId: string): Promise<Array<TeamMembership & { user: User }>>;
+  getOtherTeam(rivalryId: string, notTeamId: string): Promise<Team | null>;
+  listTrips(userId: string): Promise<Trip[]>;
+  listCallsForTrip(tripId: string): Promise<Call[]>;
+  listPastRounds(rivalryId: string): Promise<Round[]>;
+  listRulings(rivalryId: string): Promise<Ruling[]>;
   getLeaderboard(period: 'weekly' | 'annual'): Promise<LeaderboardEntry[]>;
 
   // realtime

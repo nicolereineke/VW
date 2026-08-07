@@ -330,6 +330,18 @@ into `src/theme/` during scaffolding (§ implementation task 2) rather than rede
 Everything in §3. Real auth (email/phone OTP), real photo upload, real push notifications for big
 moments and round results, real multi-device sync within a rivalry.
 
+**Implementation status note (current build):** all 6 screens are built and wired to the real
+LocalBackend, e2e-tested end to end. One deliberate simplification versus §3.2/§3.7 as originally
+specced: disputes are raised from the Rules tab ("Ask the Rivalry") rather than from a per-call
+button on a dedicated Big Moments feed — the full dispute *mechanism* (propose → both teams vote →
+resolves, including the split-decision fallback) is complete and tested either way; what's missing
+is a `listCallsForRivalry`-style feed and its dispute-trigger UI specifically. Tracked below as
+in-scope-but-not-yet-built, not silently dropped.
+
+**In scope but not yet built:**
+- Big Moments feed (a rivalry-wide, not per-trip, view of notable calls) and its per-call dispute
+  trigger — the dispute mechanism itself is done (§4.3); this is the remaining UI surface for it
+
 **Explicitly out of scope for v1** (tracked as the post-launch backlog from the journey audit):
 - Offline call queueing (calls require connectivity to submit in v1; a clear inline error explains
   why rather than failing silently — full offline-first sync is a v2 investment)

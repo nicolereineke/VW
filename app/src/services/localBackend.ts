@@ -2,6 +2,7 @@ import type {
   BackendService,
   LogCallInput,
   LogCallResult,
+  RivalryRules,
   Unsubscribe,
 } from './backend.js';
 import type {
@@ -313,6 +314,67 @@ export class LocalBackend implements BackendService {
       }
     }
     return ruling;
+  }
+
+  async updateRivalryRules(rivalryId: string, rules: Partial<RivalryRules>): Promise<Rivalry> {
+    const rivalry = this.rivalries.get(rivalryId);
+    if (!rivalry) throw new Error('Unknown rivalry.');
+    Object.assign(rivalry, rules);
+    // A rule change (e.g. the round target) applies going forward only — the
+    // in-progress round keeps the target it started with, per SPEC.md §4.8.
+    this.notifyRivalry(rivalryId);
+    return rivalry;
+  }
+
+  async getCurrentRound(rivalryId: string): Promise<Round | null> {
+    const roundId = this.currentRoundByRivalry.get(rivalryId);
+    return roundId ? this.rounds.get(roundId) ?? null : null;
+  }
+
+  async getRivalry(rivalryId: string): Promise<Rivalry | null> {
+    return this.rivalries.get(rivalryId) ?? null;
+  }
+
+  async getTeam(teamId: string): Promise<Team | null> {
+    return this.teams.get(teamId) ?? null;
+  }
+
+  async getOtherTeam(rivalryId: string, notTeamId: string): Promise<Team | null> {
+    return (
+      [...this.teams.values()].find((t) => t.rivalryId === rivalryId && t.id !== notTeamId) ?? null
+    );
+  }
+
+  async getTeamMembers(teamId: string): Promise<Array<TeamMembership & { user: User }>> {
+    return [...this.memberships.values()]
+      .filter((m) => m.teamId === teamId)
+      .map((m) => ({ ...m, user: this.users.get(m.userId)! }))
+      .filter((m) => m.user)
+      .sort((a, b) => b.points - a.points);
+  }
+
+  async listTrips(userId: string): Promise<Trip[]> {
+    return [...this.trips.values()]
+      .filter((t) => t.userId === userId)
+      .sort((a, b) => b.startedAt - a.startedAt);
+  }
+
+  async listCallsForTrip(tripId: string): Promise<Call[]> {
+    return [...this.calls.values()]
+      .filter((c) => c.tripId === tripId)
+      .sort((a, b) => a.createdAt - b.createdAt);
+  }
+
+  async listPastRounds(rivalryId: string): Promise<Round[]> {
+    return [...this.rounds.values()]
+      .filter((r) => r.rivalryId === rivalryId && r.endedAt !== null)
+      .sort((a, b) => (b.endedAt ?? 0) - (a.endedAt ?? 0));
+  }
+
+  async listRulings(rivalryId: string): Promise<Ruling[]> {
+    return [...this.rulings.values()]
+      .filter((r) => r.rivalryId === rivalryId)
+      .sort((a, b) => b.createdAt - a.createdAt);
   }
 
   async getUser(userId: string): Promise<User | null> {
