@@ -7,7 +7,7 @@
     "bootstrap": "mkdir -p node_modules/@types && ln -sf /opt/node22/lib/node_modules/ts-node/node_modules/@types/node node_modules/@types/node",
     "build": "tsc",
     "watch": "tsc --watch",
-    "test": "npm run build && node --test dist/logic/*.test.js",
+    "test": "npm run build && node --test dist/**/*.test.js",
     "serve": "npm run build && serve dist -l 5173",
     "e2e": "npm run build && playwright test"
   }
