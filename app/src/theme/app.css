@@ -1,0 +1,116 @@
+/* Ported from the validated prototype's :root tokens (repo root /index.html).
+   Scope for this pass: base tokens + onboarding + a minimal Trip/Score view,
+   enough to support the first real end-to-end slice. More screens extend
+   this file as they're built — see SPEC.md §3 for what's still outstanding. */
+
+:root{
+  --bg:#EDEEEC; --surface:#FFFFFF; --surface-2:#F5F4EF;
+  --ink:#1B1D22; --ink-soft:rgba(27,29,34,.62); --ink-faint:rgba(27,29,34,.38);
+  --border:rgba(27,29,34,.12);
+  --reineke:#2F6488; --reineke-tint:rgba(47,100,136,.12);
+  --ouellette:#C97C1F; --ouellette-tint:rgba(201,124,31,.14);
+  --rust:#A8481F; --rust-tint:rgba(168,72,31,.13);
+  --green:#386F55; --green-tint:rgba(56,111,85,.13);
+  --font-display:-apple-system,"SF Pro Display",system-ui,sans-serif;
+  --font-body:-apple-system,"SF Pro Text",system-ui,sans-serif;
+  --font-mono:ui-monospace,"SF Mono",Menlo,monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#17181D; --surface:#1F2127; --surface-2:#26282f;
+    --ink:#EDEEEC; --ink-soft:rgba(237,238,236,.66); --ink-faint:rgba(237,238,236,.4);
+    --border:rgba(237,238,236,.14);
+    --reineke:#7FB4D9; --reineke-tint:rgba(127,180,217,.16);
+    --ouellette:#F0A94A; --ouellette-tint:rgba(240,169,74,.16);
+    --rust:#E07A4E; --rust-tint:rgba(224,122,78,.16);
+    --green:#63A987; --green-tint:rgba(99,169,135,.16);
+    color-scheme: dark;
+  }
+}
+
+*{ box-sizing:border-box; }
+body{
+  margin:0; font-family:var(--font-body); color:var(--ink); background:var(--bg);
+  min-height:100vh; -webkit-font-smoothing:antialiased;
+}
+#app{ max-width:420px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; }
+
+.hint{ font-size:12px; color:var(--ink-faint); }
+.section-label{
+  font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--ink-faint); margin:16px 2px 8px;
+}
+
+/* buttons & inputs, shared across onboarding and the app */
+.big-start{
+  width:100%; border:none; border-radius:18px; padding:20px 16px;
+  background:var(--reineke); color:#fff; font-family:var(--font-display);
+  font-weight:800; font-size:16px; cursor:pointer;
+}
+.text-input{
+  width:100%; border:1.4px solid var(--border); background:var(--surface-2); color:var(--ink);
+  font-size:15px; padding:12px 14px; border-radius:12px; font-family:var(--font-body); margin-bottom:12px;
+}
+.text-input:focus-visible{ outline:2px solid var(--reineke); outline-offset:1px; }
+.add-member-btn{
+  width:100%; border:1.4px dashed var(--border); background:none; color:var(--ink-soft);
+  font-size:12.5px; font-weight:600; padding:11px; border-radius:14px; cursor:pointer; margin-top:2px;
+}
+.seg{ display:flex; gap:6px; margin-bottom:12px; }
+.seg button{
+  flex:1; border:1.4px solid var(--border); background:var(--surface-2); color:var(--ink);
+  font-size:12.5px; font-weight:700; padding:10px 4px; border-radius:12px; cursor:pointer;
+}
+.seg button[aria-pressed="true"]{ background:var(--rust); border-color:var(--rust); color:#fff; }
+
+/* onboarding */
+.onboarding{ display:flex; flex-direction:column; flex:1; padding:24px 22px; position:relative; }
+.ob-timer{
+  position:absolute; top:14px; right:16px; font-family:var(--font-mono); font-size:11px; font-weight:700;
+  color:var(--ink-faint); background:var(--surface); border:1px solid var(--border); padding:4px 10px;
+  border-radius:999px; font-variant-numeric:tabular-nums;
+}
+.ob-timer.locked{ color:var(--green); border-color:var(--green); background:var(--green-tint); }
+.ob-step{ display:none; flex-direction:column; flex:1; padding-top:40px; }
+.ob-step.active{ display:flex; }
+.ob-center{ flex:1; display:flex; flex-direction:column; justify-content:center; text-align:center; align-items:center; }
+.ob-h{ font-family:var(--font-display); font-weight:800; font-size:22px; margin:0 0 8px; }
+.ob-sub{ font-size:13px; color:var(--ink-soft); line-height:1.55; margin:0; max-width:280px; }
+.ob-field-label{ font-size:11px; font-weight:700; color:var(--ink-faint); text-transform:uppercase; margin:0 0 6px; }
+.ob-otp{ text-align:center; font-family:var(--font-mono); font-size:26px; letter-spacing:.5em; padding-left:18px; }
+.ob-error{ color:var(--rust); font-size:12.5px; margin:-6px 0 12px; min-height:16px; }
+.logo-row{ display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:14px; }
+.logo{ font-family:var(--font-display); font-weight:900; font-size:26px; margin:0; letter-spacing:-.02em; }
+
+/* trip / score (minimal, extended as more screens land) */
+.screen{ padding:20px 20px 40px; flex:1; }
+.screen-title{ font-family:var(--font-display); font-weight:800; font-size:22px; margin:0 0 2px; }
+.screen-sub{ margin:0 0 16px; font-size:12.5px; color:var(--ink-soft); }
+.streak-chip{
+  display:flex; align-items:center; justify-content:center; gap:5px; font-size:11.5px; font-weight:600;
+  background:var(--rust-tint); color:var(--rust); padding:9px 12px; border-radius:12px; margin-bottom:14px;
+}
+.streak-chip.done{ background:var(--green-tint); color:var(--green); }
+.streak-chip b{ font-family:var(--font-mono); }
+.punch-wrap{ display:flex; justify-content:center; margin:20px 0; }
+.punch-btn{
+  width:120px; height:120px; border-radius:50%; border:none; cursor:pointer;
+  background:var(--rust); color:#fff; font-family:var(--font-display); font-weight:900; font-size:15px;
+  box-shadow:0 10px 26px -8px var(--rust);
+}
+.score-row{
+  display:flex; align-items:center; justify-content:space-between; background:var(--surface);
+  border:1px solid var(--border); border-radius:20px; padding:16px 12px; margin-bottom:12px;
+}
+.score-row .team{ flex:1; text-align:center; }
+.score-row .name{ font-size:11px; letter-spacing:.08em; text-transform:uppercase; font-weight:700; }
+.score-row .num{ font-family:var(--font-mono); font-size:32px; font-weight:700; font-variant-numeric:tabular-nums; }
+.chips{ display:flex; flex-wrap:wrap; gap:7px; margin-bottom:14px; }
+.chip{
+  display:inline-flex; align-items:center; gap:6px; border:1.4px solid var(--border); background:var(--surface-2);
+  color:var(--ink); font-size:12px; font-weight:600; padding:7px 12px; border-radius:999px; cursor:pointer;
+}
+.chip[aria-pressed="true"]{ background:var(--reineke); border-color:var(--reineke); color:#fff; }
+.call-row{ display:flex; justify-content:space-between; padding:9px 2px; border-bottom:1px solid var(--border); font-size:13px; }
+.call-row .pts{ font-family:var(--font-mono); font-weight:700; color:var(--green); }

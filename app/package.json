@@ -4,11 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "bootstrap": "mkdir -p node_modules/@types && ln -sf /opt/node22/lib/node_modules/ts-node/node_modules/@types/node node_modules/@types/node",
-    "build": "tsc",
+    "bootstrap": "mkdir -p node_modules/@types && ln -sf /opt/node22/lib/node_modules/ts-node/node_modules/@types/node node_modules/@types/node && ln -sf /opt/node22/lib/node_modules/playwright node_modules/playwright",
+    "build": "tsc && mkdir -p dist/theme && cp index.html dist/index.html && cp src/theme/app.css dist/theme/app.css",
     "watch": "tsc --watch",
     "test": "npm run build && node --test dist/**/*.test.js",
     "serve": "npm run build && serve dist -l 5173",
-    "e2e": "npm run build && playwright test"
+    "e2e": "npm run build && tsc -p tsconfig.e2e.json && node --test dist-e2e/*.test.js"
   }
 }
