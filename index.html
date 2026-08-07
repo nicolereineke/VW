@@ -488,7 +488,10 @@
   .win-overlay.show .win-card{ transform:scale(1); opacity:1; }
   .win-eyebrow{ font-family:var(--font-mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-faint); margin:0 0 10px; }
   .win-title{ font-family:var(--font-display); font-weight:900; font-size:21px; margin:0 0 4px; text-wrap:balance; }
-  .win-score{ font-family:var(--font-mono); font-size:32px; font-weight:700; margin:8px 0 18px; font-variant-numeric:tabular-nums; }
+  .win-score{ font-family:var(--font-mono); font-size:32px; font-weight:700; margin:8px 0 8px; font-variant-numeric:tabular-nums; }
+  .win-subtext{ font-size:12.5px; color:var(--ink-soft); line-height:1.5; margin:0 0 18px; }
+  .win-card.loss #win-bug{ opacity:.55; }
+  .win-card.loss .win-new-round{ background:var(--surface-2); color:var(--ink); border:1.4px solid var(--border); }
   .win-new-round{
     width:100%; border:none; border-radius:14px; padding:14px; background:var(--ink); color:var(--bg);
     font-family:var(--font-display); font-weight:800; font-size:14px; cursor:pointer;
@@ -822,7 +825,18 @@
             <div id="win-bug" style="display:flex;justify-content:center;margin-bottom:10px;"></div>
             <h3 class="win-title" id="win-title">Team Reineke wins the round!</h3>
             <div class="win-score" id="win-score">21–17</div>
+            <p class="win-subtext" id="win-subtext"></p>
             <button class="win-new-round" id="win-new-round">Start New Round</button>
+          </div>
+        </div>
+
+        <!-- NEW FIND CELEBRATION -->
+        <div class="win-overlay" id="find-overlay">
+          <div class="win-card">
+            <p class="win-eyebrow">🎉 New Find!</p>
+            <div id="find-bugs" style="display:flex;justify-content:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;"></div>
+            <h3 class="win-title" id="find-title">Kasan Red Thing</h3>
+            <p class="win-subtext" id="find-subtext" style="margin-bottom:2px;">6 of 56 found</p>
           </div>
         </div>
 
@@ -1146,15 +1160,47 @@
     }
   }
 
+  function showNewFinds(newCombos){
+    if(!newCombos.length) return;
+    var total = Object.keys(myBugDex).length;
+    $('#find-bugs').innerHTML = newCombos.slice(0,4).map(function(c){
+      var color = c.split('|')[0];
+      return beetleIcon(OFFICIAL_COLORS[color], 30);
+    }).join('');
+    var names = newCombos.map(function(c){ var p = c.split('|'); return p[0] + ' ' + p[1]; });
+    $('#find-title').textContent = names.length === 1 ? names[0] : names.length + ' new finds!';
+    $('#find-subtext').textContent = total + ' of 56 in your Bug-Dex now.';
+    var ov = $('#find-overlay');
+    ov.classList.add('show');
+    clearTimeout(ov._t);
+    ov._t = setTimeout(function(){ ov.classList.remove('show'); }, 2400);
+  }
+  $('#find-overlay').addEventListener('click', function(e){ if(e.target === $('#find-overlay')) $('#find-overlay').classList.remove('show'); });
+
   function triggerWin(teamKey){
-    var name = teamKey === 'reineke' ? 'Team Reineke' : 'Team Ouellette';
+    var name = teamData[teamKey].label;
     var mine = teamKey === 'reineke' ? reinekeScore : ouelletteScore;
     var theirs = teamKey === 'reineke' ? ouelletteScore : reinekeScore;
     pastRounds.unshift({ winner:name, score: mine+'–'+theirs, when:'Just now' });
-    $('#win-title').textContent = name + ' wins the round!';
-    $('#win-score').textContent = mine + '–' + theirs;
+
+    var youWon = (teamKey === activeTeam);
+    var card = $('#win-overlay .win-card');
     $('#win-bug').innerHTML = beetleIcon(teamKey === 'reineke' ? 'var(--reineke)' : 'var(--ouellette)', 46);
-    spawnConfetti();
+    $('#win-score').textContent = mine + '–' + theirs;
+
+    if(youWon){
+      card.classList.remove('loss');
+      $('#win-title').textContent = name + ' wins the round!';
+      $('#win-subtext').textContent = '';
+      $('#win-new-round').textContent = 'Start New Round';
+      spawnConfetti();
+    } else {
+      card.classList.add('loss');
+      $('#win-title').textContent = name + ' wins the round.';
+      $('#win-subtext').textContent = "Good game — every call you logged still counts toward your Bug-Dex.";
+      $('#win-new-round').textContent = 'Rematch';
+      $('#confetti').innerHTML = '';
+    }
     $('#win-overlay').classList.add('show');
   }
 
@@ -1453,9 +1499,14 @@
     list.insertBefore(row, list.firstChild);
 
     caller.pts += m;
+    var newCombos = [];
     if(caller.you){
       youLifetime += m;
-      selectedColors.forEach(function(c){ myBugDex[c + '|' + currentStyle] = true; });
+      selectedColors.forEach(function(c){
+        var key = c + '|' + currentStyle;
+        if(!myBugDex[key]) newCombos.push(key);
+        myBugDex[key] = true;
+      });
       $('#bugdex-count-inline').textContent = Object.keys(myBugDex).length;
       if(photoDataUrl){ youGlobal.weekly += m; youGlobal.annual += m; }
     }
@@ -1466,8 +1517,13 @@
     prependMoment(activeTeam, caller.name, currentStyle, label, m);
     sheet.classList.remove('open');
 
+    var notifDelay = 350;
+    if(newCombos.length){
+      setTimeout(function(){ showNewFinds(newCombos); }, 300);
+      notifDelay = 2750;
+    }
     if(currentStyle === 'Thing' || currentStyle === 'Convertible'){
-      setTimeout(function(){ showNotif(currentStyle, activeTeam, caller.name, photoDataUrl); }, 350);
+      setTimeout(function(){ showNotif(currentStyle, activeTeam, caller.name, photoDataUrl); }, notifDelay);
     }
   });
 })();
